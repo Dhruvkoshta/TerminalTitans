@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, serial, integer } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -6,6 +6,7 @@ export const user = pgTable("user", {
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").notNull(),
 	image: text("image"),
+	userType: text("user_type").notNull().default("student"),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at").notNull(),
 });
@@ -48,4 +49,33 @@ export const verification = pgTable("verification", {
 	expiresAt: timestamp("expires_at").notNull(),
 	createdAt: timestamp("created_at"),
 	updatedAt: timestamp("updated_at"),
+});
+
+export const logs = pgTable("logs", {
+	id: serial("id").primaryKey(),
+	examCode: text("exam_code").notNull(),
+	studentName: text("student_name").notNull(),
+	studentEmail: text("student_email").notNull(),
+
+	tabChangeCount: integer("tab_change_count").notNull().default(0),
+	keyPressCount: integer("key_press_count").notNull().default(0),
+	mobileFound: boolean("mobile_found").notNull().default(false),
+	prohibitedObjectFound: boolean("prohibited_object_found").default(false),
+	faceNotVisible: boolean("face_not_visible").notNull().default(false),
+	multipleFacesFound: boolean("multiple_faces_found").notNull().default(false),
+	eyesOffScreen: boolean("eyes_off_screen").notNull().default(false),
+	focusScore: integer("focus_score").default(100),
+	focusStatus: text("focus_status").default("focused"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const exams = pgTable("exams", {
+	id: serial("id").primaryKey(),
+	name: text("name").notNull(),
+	profEmail: text("prof_email").notNull(),
+	examLink: text("exam_link").notNull(),
+	dateTimeStart: timestamp("date_time_start").notNull(),
+	duration: integer("duration").notNull(),
+	examCode: text("exam_code").notNull(),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
 });

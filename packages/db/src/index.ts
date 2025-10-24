@@ -1,5 +1,6 @@
 import { neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
+import { and, eq } from "drizzle-orm";
 import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
@@ -9,3 +10,6 @@ neonConfig.webSocketConstructor = ws;
 
 const sql = neon(process.env.DATABASE_URL || "");
 export const db = drizzle(sql);
+
+// Re-export query helpers to ensure a single drizzle-orm instance across the app
+export { eq, and };

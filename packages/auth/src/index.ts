@@ -14,5 +14,14 @@ export const auth = betterAuth<BetterAuthOptions>({
 	emailAndPassword: {
 		enabled: true,
 	},
+	user: {
+		additionalFields: {
+			userType: {
+				type: "string",
+				defaultValue: "student",
+				input: true,
+			},
+		},
+	},
   plugins: [nextCookies()]
 });

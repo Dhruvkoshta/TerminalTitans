@@ -1,19 +1,20 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
+import InstructorDashboard from "./InstructorDashboard";
+import StudentDashboard from "./StudentDashboard";
 
 export default function Dashboard({
 	session,
 }: {
 	session: typeof authClient.$Infer.Session;
 }) {
-	const privateData = useQuery(trpc.privateData.queryOptions());
+	useQuery(trpc.privateData.queryOptions());
 
-	return (
-		<>
-			<p>API: {privateData.data?.message}</p>
-		</>
-	);
+	// userType is provided via Better Auth additionalFields, but may not be reflected in TS here
+	if ((session.user as any)?.userType === "instructor") {
+		return <InstructorDashboard session={session} />;
+	}
+	return <StudentDashboard session={session} />;
 }
