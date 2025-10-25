@@ -17,8 +17,10 @@ import { useRouter } from "next/navigation";
 
 export default function SignUpForm({
 	onSwitchToSignIn,
+	embedded = false,
 }: {
 	onSwitchToSignIn: () => void;
+	embedded?: boolean;
 }) {
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
@@ -32,6 +34,7 @@ export default function SignUpForm({
 		},
 		onSubmit: async ({ value }) => {
 			try {
+				// create the user
 				await authClient.signUp.email(
 					{
 						email: value.email,
@@ -39,18 +42,26 @@ export default function SignUpForm({
 						name: value.name,
 						userType: value.userType,
 					} as any,
+				);
+				// immediately sign in so server-side session is available
+				await authClient.signIn.email(
 					{
-						onSuccess: () => {
-							router.push("/dashboard");
-							toast.success("Sign up successful");
-						},
+						email: value.email,
+						password: value.password,
+					},
+					{
+							onSuccess: () => {
+								if (typeof window !== "undefined") window.location.replace("/dashboard");
+								else router.replace("/dashboard");
+								toast.success("Sign up successful");
+							},
 						onError: (error) => {
-							toast.error(error.error.message || error.error.statusText);
+							toast.error(error.error.message || error.error.statusText || "Sign in failed after sign up");
 						},
-					}
+					},
 				);
 			} catch (error) {
-				console.error("Sign up error:", error);
+				console.error("Sign up / sign in error:", error);
 				toast.error("Sign up failed");
 			}
 		},
@@ -69,8 +80,10 @@ export default function SignUpForm({
 	}
 
 	return (
-		<div className='mx-auto w-full mt-10 max-w-md p-6'>
-			<h1 className='mb-6 text-center text-3xl font-bold'>Create Account</h1>
+		<div className={embedded ? undefined : 'mx-auto w-full mt-10 max-w-md p-6'}>
+			{!embedded && (
+				<h1 className='mb-6 text-center text-3xl font-bold'>Create Account</h1>
+			)}
 
 			<form
 				onSubmit={(e) => {
@@ -188,15 +201,18 @@ export default function SignUpForm({
 				</form.Subscribe>
 			</form>
 
-			<div className='mt-4 text-center'>
-				<Button
-					variant='link'
-					onClick={onSwitchToSignIn}
-					className='text-indigo-600 hover:text-indigo-800'
-				>
-					Already have an account? Sign In
-				</Button>
-			</div>
+			{!embedded && (
+				<div className='mt-4 text-center'>
+					<Button
+						variant='link'
+						onClick={onSwitchToSignIn}
+						className='text-indigo-600 hover:text-indigo-800'
+					>
+						Already have an account? Sign In
+					</Button>
+				</div>
+			)}
 		</div>
 	);
+
 }

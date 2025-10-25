@@ -10,8 +10,10 @@ import { useRouter } from "next/navigation";
 
 export default function SignInForm({
 	onSwitchToSignUp,
+	embedded = false,
 }: {
 	onSwitchToSignUp: () => void;
+	embedded?: boolean;
 }) {
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
@@ -28,10 +30,12 @@ export default function SignInForm({
 					password: value.password,
 				},
 				{
-					onSuccess: () => {
-						router.push("/dashboard");
-						toast.success("Sign in successful");
-					},
+						onSuccess: () => {
+								// perform full navigation so server-side session is available immediately
+								if (typeof window !== "undefined") window.location.replace("/dashboard");
+								else router.replace("/dashboard");
+								toast.success("Sign in successful");
+							},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
 					},
@@ -51,8 +55,10 @@ export default function SignInForm({
 	}
 
 	return (
-		<div className="mx-auto w-full mt-10 max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+		<div className={embedded ? undefined : "mx-auto w-full mt-10 max-w-md p-6"}>
+			{!embedded && (
+				<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+			)}
 
 			<form
 				onSubmit={(e) => {
@@ -121,15 +127,18 @@ export default function SignInForm({
 				</form.Subscribe>
 			</form>
 
-			<div className="mt-4 text-center">
-				<Button
-					variant="link"
-					onClick={onSwitchToSignUp}
-					className="text-indigo-600 hover:text-indigo-800"
-				>
-					Need an account? Sign Up
-				</Button>
-			</div>
+			{!embedded && (
+				<div className="mt-4 text-center">
+					<Button
+						variant="link"
+						onClick={onSwitchToSignUp}
+						className="text-indigo-600 hover:text-indigo-800"
+					>
+						Need an account? Sign Up
+					</Button>
+				</div>
+			)}
 		</div>
 	);
+
 }

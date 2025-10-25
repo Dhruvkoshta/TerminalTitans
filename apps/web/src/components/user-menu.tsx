@@ -22,9 +22,14 @@ export default function UserMenu() {
 
 	if (!session) {
 		return (
-			<Button variant="outline" asChild>
-				<Link href="/login">Sign In</Link>
-			</Button>
+			<div className="flex items-center gap-2">
+				<Button variant="ghost" asChild>
+					<Link href={'/signin' as any}>Sign In</Link>
+				</Button>
+				<Button asChild>
+					<Link href={'/signup' as any}>Sign Up</Link>
+				</Button>
+			</div>
 		);
 	}
 

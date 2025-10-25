@@ -31,6 +31,8 @@
     "@neondatabase/serverless": "^1.0.1",
     "ws": "^8.18.3",
     "dotenv": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "pg": "^8.13.1"
   }
 }
+

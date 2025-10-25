@@ -211,24 +211,50 @@ export default function Detection(props: DetectionProps) {
     async function loadAll() {
       const tf = await import("@tensorflow/tfjs");
       tfRef.current = tf;
+
       const coco = await import("@tensorflow-models/coco-ssd");
       cocoRef.current = await coco.load();
+
       const fld = await import("@tensorflow-models/face-landmarks-detection");
       faceRef.current = fld;
-      faceDetectorRef.current = await fld.createDetector(
-        fld.SupportedModels.MediaPipeFaceMesh,
-        {
-          runtime: "mediapipe",
-          refineLandmarks: true,
-          solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+
+      // Try to create the detector using MediaPipe runtime first. If that fails
+      // (CDN blocked, CSP, or environment issue), fall back to the tfjs runtime.
+      try {
+        faceDetectorRef.current = await fld.createDetector(
+          fld.SupportedModels.MediaPipeFaceMesh,
+          {
+            runtime: "mediapipe",
+            refineLandmarks: true,
+            solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+          }
+        );
+      } catch (mediapipeErr) {
+        // log the original error for debugging
+        // Try tfjs runtime as a fallback
+        try {
+          console.warn("MediaPipe detector failed, trying tfjs runtime:", mediapipeErr);
+          faceDetectorRef.current = await fld.createDetector(
+            fld.SupportedModels.MediaPipeFaceMesh,
+            {
+              runtime: "tfjs",
+              refineLandmarks: true,
+            }
+          );
+        } catch (tfjsErr) {
+          // If both fail, rethrow to be caught by outer handler
+          console.error("Both MediaPipe and tfjs detector creation failed:", mediapipeErr, tfjsErr);
+          throw tfjsErr || mediapipeErr;
         }
-      );
+      }
 
       if (!cancelled) setReady(true);
     }
 
-    loadAll().catch(() => {
-      swal("Failed to load ML models", "Please refresh and allow camera", "error");
+    loadAll().catch((err: any) => {
+      // helpful console output + user-facing alert
+      console.error("Failed to load ML models:", err);
+      swal("Failed to load ML models", (err && err.message) || "Please refresh, allow camera access, and check network/CSP.", "error");
     });
 
     return () => {

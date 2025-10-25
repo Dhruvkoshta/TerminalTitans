@@ -2,8 +2,8 @@
 import { authClient } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import InstructorDashboard from "./InstructorDashboard";
-import StudentDashboard from "./StudentDashboard";
+import InstructorDashboard from "./(instructor)/InstructorDashboard";
+import StudentDashboard from "./(student)/StudentDashboard";
 
 export default function Dashboard({
 	session,

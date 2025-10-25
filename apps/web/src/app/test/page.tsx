@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import swal from "sweetalert";
 import Detection from "@/components/detection/Detection";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 type State = {
   student_name: string;
@@ -285,7 +293,29 @@ function TestPageInner() {
 export default function TestPage() {
   return (
     <Suspense fallback={<div />}> 
-      <TestPageInner />
+      <div className="px-6 py-4">
+        <Card className="rounded-2xl">
+          <CardHeader className="flex items-center justify-between">
+            <div>
+              <CardTitle>Exam Interface</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Proctoring session in progress — follow the instructions and keep your camera on.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => window.location.replace('/dashboard')}>Exit</Button>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <TestPageInner />
+          </CardContent>
+
+          <CardFooter>
+            <p className="text-sm text-muted-foreground">Your activity will be monitored during this exam.</p>
+          </CardFooter>
+        </Card>
+      </div>
     </Suspense>
   );
 }

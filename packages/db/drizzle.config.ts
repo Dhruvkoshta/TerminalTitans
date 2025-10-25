@@ -1,9 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
 
-dotenv.config({
-	path: "../../apps/web/.env",
-});
+// Prefer monorepo root .env (e.g. Neon), fallback to apps/web/.env for local
+dotenv.config({ path: "../../.env" });
+if (!process.env.DATABASE_URL) {
+	dotenv.config({ path: "../../apps/web/.env" });
+}
 
 export default defineConfig({
 	schema: "./src/schema",
@@ -13,3 +15,4 @@ export default defineConfig({
 		url: process.env.DATABASE_URL || "",
 	},
 });
+

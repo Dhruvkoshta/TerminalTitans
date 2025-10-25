@@ -10,14 +10,8 @@ export default async function DashboardPage() {
 	});
 
 	if (!session?.user) {
-		redirect("/login");
+		redirect("/signin");
 	}
 
-	return (
-		<>
-			<div className='flex justify-center items-center'>
-				<Dashboard session={session} />
-			</div>
-		</>
-	);
+	return <Dashboard session={session} />;
 }
