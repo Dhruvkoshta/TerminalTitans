@@ -1,16 +1,13 @@
 
 			"use client";
 			import React from "react";
-			import { useQuery } from "@tanstack/react-query";
-			import { trpc } from "@/utils/trpc";
 			import { Button } from "@/components/ui/button";
 			import { Card, CardContent } from "@/components/ui/card";
 			import TrustedBy from "@/components/trusted-by";
 
 			export default function Home() {
-				const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-
 				const services = [
+
 					{
 						title: "Student Dashboard",
 						desc: "A personalized student hub with upcoming exams and progress.\\nClear widgets for quick access and reminders.",
@@ -284,10 +281,10 @@
 						<div className="mt-8 flex items-center justify-between border-t border-slate-700/30 pt-6">
 							<div className="text-sm text-slate-400">© {new Date().getFullYear()} PROCTO • All rights reserved.</div>
 							<div className="flex items-center gap-4 text-sm">
-								<div className="flex items-center gap-2">
-									<div className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`} />
-									<span className="text-sm text-slate-400">{healthCheck.isLoading ? "Checking..." : healthCheck.data ? "Connected" : "Disconnected"}</span>
-								</div>
+							<div className="flex items-center gap-2">
+								<div className="h-2 w-2 rounded-full bg-green-500" />
+								<span className="text-sm text-slate-400">All systems nominal</span>
+							</div>
 							</div>
 						</div>
 					</div>

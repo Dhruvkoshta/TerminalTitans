@@ -10,7 +10,6 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@mediapipe/face_mesh": "^0.4.1633559619",
-    "@my-better-t-app/api": "workspace:*",
     "@my-better-t-app/auth": "workspace:*",
     "@my-better-t-app/db": "workspace:*",
     "@radix-ui/react-accessible-icon": "^1.1.7",
@@ -26,9 +25,6 @@
     "@tensorflow-models/coco-ssd": "^2.2.3",
     "@tensorflow-models/face-landmarks-detection": "^1.0.6",
     "@tensorflow/tfjs": "^4.22.0",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "@trpc/tanstack-react-query": "^11.5.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",
