@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import Detection from "@/components/detection/Detection";
 
-export default function StudentExamPage() {
+function StudentExamPageContent() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const { data: session } = authClient.useSession();
@@ -531,5 +531,19 @@ export default function StudentExamPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function StudentExamPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className='min-h-screen bg-slate-900 flex items-center justify-center'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
+				</div>
+			}
+		>
+			<StudentExamPageContent />
+		</Suspense>
 	);
 }
