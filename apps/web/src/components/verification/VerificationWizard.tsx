@@ -33,6 +33,32 @@ export default function VerificationWizard({
 	const [facePhoto, setFacePhoto] = useState<string | null>(null);
 	const [roomScan, setRoomScan] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isNavigating, setIsNavigating] = useState(false);
+
+	// Check if verification was already completed for this exam
+	useEffect(() => {
+		if (!session?.user?.email || !examId) return;
+
+		const verificationKey = `verification_completed_${examId}_${session.user.email}`;
+		const completed = sessionStorage.getItem(verificationKey);
+
+		if (completed === "true" && !isNavigating) {
+			// Already verified, navigate directly to exam
+			setIsNavigating(true);
+			const studentEmail = session.user.email;
+			const studentName = session.user.name || "";
+
+			const q = new URLSearchParams({
+				exam_code: examCode,
+				mins_left: String(durationMins ?? 15),
+				secs_left: "0",
+				student_name: studentName,
+				student_email: studentEmail,
+				exam_id: examId,
+			});
+			router.push(`/student-exam?${q.toString()}`);
+		}
+	}, [examId, session, examCode, durationMins, router, isNavigating]);
 
 	useEffect(() => {
 		// Clean up any active media streams when unmounting
@@ -56,7 +82,6 @@ export default function VerificationWizard({
 				});
 		};
 	}, []);
-
 	function nextStep() {
 		setStep((prev) => prev + 1);
 	}
@@ -66,7 +91,10 @@ export default function VerificationWizard({
 	}
 
 	async function onComplete() {
+		if (isNavigating) return; // Prevent multiple submissions
+
 		try {
+			setIsNavigating(true);
 			const studentEmail = session?.user?.email || "";
 			const studentName = session?.user?.name || "";
 
@@ -86,6 +114,10 @@ export default function VerificationWizard({
 				}),
 			});
 
+			// Mark verification as completed
+			const verificationKey = `verification_completed_${examId}_${studentEmail}`;
+			sessionStorage.setItem(verificationKey, "true");
+
 			toast.success("Verification completed successfully!");
 			const q = new URLSearchParams({
 				exam_code: examCode,
@@ -97,6 +129,7 @@ export default function VerificationWizard({
 			});
 			router.push(`/student-exam?${q.toString()}`);
 		} catch (error) {
+			setIsNavigating(false);
 			toast.error("Failed to complete verification. Please try again.");
 		}
 	}
@@ -113,6 +146,18 @@ export default function VerificationWizard({
 	];
 
 	const studentName = session?.user?.name || "";
+
+	// Show loading state while checking or navigating
+	if (isNavigating) {
+		return (
+			<div className='min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4'>
+				<div className='text-center space-y-4'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto' />
+					<p className='text-muted-foreground'>Redirecting to exam...</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className='min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4'>

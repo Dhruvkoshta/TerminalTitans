@@ -173,6 +173,13 @@ export default function ExamQuestionsArea({
 			}
 
 			const result = await response.json();
+
+			// Clear verification flag on successful submission
+			if (examId && studentEmail) {
+				const verificationKey = `verification_completed_${examId}_${studentEmail}`;
+				sessionStorage.removeItem(verificationKey);
+			}
+
 			toast.success(
 				`Exam submitted! Score: ${result.score}/${result.maxScore}`
 			);
