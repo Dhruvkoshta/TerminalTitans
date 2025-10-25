@@ -25,7 +25,6 @@ type Exam = {
 	id: number;
 	name: string;
 	profEmail: string;
-	examLink: string;
 	dateTimeStart: string;
 	duration: number;
 	examCode: string;
@@ -150,7 +149,7 @@ export default function StudentDashboard({
 		<div className='space-y-8 max-w-7xl mx-auto'>
 			{/* Welcome Header */}
 			<div className='space-y-2'>
-				<h1 className='text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+				<h1 className='text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
 					Welcome back, {session.user?.name?.split(" ")[0]}! 👋
 				</h1>
 				<p className='text-lg text-muted-foreground'>
@@ -160,7 +159,7 @@ export default function StudentDashboard({
 			</div>
 
 			{/* Quick Start Exam Card */}
-			<Card className='border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950'>
+			<Card className='border-2 border-blue-200 bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950'>
 				<CardHeader>
 					<CardTitle className='flex items-center gap-2'>
 						<Code className='w-5 h-5' />

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       .values({
         name: body.title || "Untitled Exam",
         profEmail: body.prof_email || body.ownerEmail || "unknown@local",
-        examLink: body.exam_link || body.form_link || "about:blank",
+        examLink: body.exam_link || body.form_link || "",
         dateTimeStart: start,
         duration,
         examCode: code,

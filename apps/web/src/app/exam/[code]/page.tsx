@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import VerificationWizard from "@/components/verification/VerificationWizard";
+import { db, eq } from "@my-better-t-app/db";
+import { exams } from "@my-better-t-app/db/schema/auth";
 
 export default async function ExamByCodePage({
 	params,
@@ -7,23 +9,28 @@ export default async function ExamByCodePage({
 	params: Promise<{ code: string }>;
 }) {
 	const { code } = await params;
-	const res = await fetch(
-		`${
-			process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"
-		}/api/exams/examByCode?exam_code=${encodeURIComponent(code)}`,
-		{ cache: "no-store" }
-	);
-	if (!res.ok) return notFound();
-	const exam = await res.json();
+
+	// Use database query instead of fetch to avoid URL issues
+	const examResults = await db
+		.select()
+		.from(exams)
+		.where(eq(exams.examCode, code))
+		.limit(1);
+
+	if (examResults.length === 0) {
+		return notFound();
+	}
+
+	const exam = examResults[0];
 
 	return (
 		<div className='min-h-screen p-8'>
 			<div className='max-w-4xl mx-auto'>
 				<VerificationWizard
-					examCode={exam.examCode || exam.exam_code}
+					examCode={exam.examCode}
 					examName={exam.name}
 					durationMins={Number(exam.duration) || 15}
-					examLink={exam.examLink || exam.exam_link}
+					examId={String(exam.id)}
 				/>
 			</div>
 		</div>

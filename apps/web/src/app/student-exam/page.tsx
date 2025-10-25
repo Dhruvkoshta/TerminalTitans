@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import Detection from "@/components/detection/Detection";
+import ExamQuestionsArea from "@/components/ExamQuestionsArea";
 
 function StudentExamPageContent() {
 	const searchParams = useSearchParams();
@@ -16,7 +17,7 @@ function StudentExamPageContent() {
 	const examCode = searchParams?.get("exam_code") || "";
 	const minsLeft = parseInt(searchParams?.get("mins_left") || "15", 10);
 	const secsLeft = parseInt(searchParams?.get("secs_left") || "0", 10);
-	const examLink = searchParams?.get("exam_link") || "";
+	const examId = searchParams?.get("exam_id") || "";
 
 	const [timeRemaining, setTimeRemaining] = useState(minsLeft * 60 + secsLeft);
 	const [tabChangeCount, setTabChangeCount] = useState(0);
@@ -379,22 +380,12 @@ function StudentExamPageContent() {
 					{/* Main exam area */}
 					<div className='lg:col-span-3'>
 						<Card className='bg-slate-800 border-slate-700 p-6'>
-							{examLink ? (
-								<iframe
-									src={examLink}
-									className='w-full h-[calc(100vh-200px)] border-0 rounded'
-									title='Exam Content'
-									sandbox='allow-same-origin allow-scripts allow-forms'
-									referrerPolicy='no-referrer'
-								/>
-							) : (
-								<div className='h-[calc(100vh-200px)] flex items-center justify-center text-slate-400'>
-									<div className='text-center'>
-										<p className='text-xl mb-2'>No exam link provided</p>
-										<p className='text-sm'>Please contact your instructor</p>
-									</div>
-								</div>
-							)}
+							<ExamQuestionsArea
+								examCode={examCode}
+								studentEmail={studentEmail}
+								examId={examId}
+								onSubmitComplete={handleSubmitExam}
+							/>
 						</Card>
 					</div>
 

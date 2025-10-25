@@ -98,7 +98,7 @@ export default function InstructorDashboard({
 										<td className='py-2 pr-4'>{ex.status}</td>
 										<td className='py-2 pr-4 space-x-2'>
 											<a
-												className='underline'
+												className='underline text-blue-600 dark:text-blue-400 hover:text-blue-800'
 												href={`/dashboard/exams/${
 													ex.id
 												}?prof_email=${encodeURIComponent(profEmail || "")}`}
@@ -106,7 +106,13 @@ export default function InstructorDashboard({
 												Details
 											</a>
 											<a
-												className='underline'
+												className='underline text-green-600 dark:text-green-400 hover:text-green-800'
+												href={`/dashboard/exams/${ex.id}/responses`}
+											>
+												Responses
+											</a>
+											<a
+												className='underline text-purple-600 dark:text-purple-400 hover:text-purple-800'
 												href={`/exam/${ex.examCode}`}
 												target='_blank'
 												rel='noreferrer'

@@ -17,14 +17,14 @@ interface VerificationWizardProps {
 	examCode: string;
 	examName: string;
 	durationMins: number;
-	examLink?: string;
+	examId?: string;
 }
 
 export default function VerificationWizard({
 	examCode,
 	examName,
 	durationMins,
-	examLink,
+	examId,
 }: VerificationWizardProps) {
 	const [step, setStep] = useState(1);
 	const router = useRouter();
@@ -32,16 +32,28 @@ export default function VerificationWizard({
 
 	const [facePhoto, setFacePhoto] = useState<string | null>(null);
 	const [roomScan, setRoomScan] = useState<string | null>(null);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
 		// Clean up any active media streams when unmounting
 		return () => {
+			// Stop all active media tracks
 			navigator.mediaDevices
-				.getUserMedia({ video: true, audio: true })
-				.then((stream) => {
-					stream.getTracks().forEach((track) => track.stop());
+				.enumerateDevices()
+				.then(() => {
+					// Get all video elements and stop their streams
+					const videos = document.querySelectorAll("video");
+					videos.forEach((video) => {
+						if (video.srcObject) {
+							const stream = video.srcObject as MediaStream;
+							stream.getTracks().forEach((track) => track.stop());
+							video.srcObject = null;
+						}
+					});
 				})
-				.catch(() => {});
+				.catch(() => {
+					// Silently fail - cleanup best effort
+				});
 		};
 	}, []);
 
@@ -81,7 +93,7 @@ export default function VerificationWizard({
 				secs_left: "0",
 				student_name: studentName,
 				student_email: studentEmail,
-				exam_link: examLink || "",
+				exam_id: examId || "",
 			});
 			router.push(`/student-exam?${q.toString()}`);
 		} catch (error) {
