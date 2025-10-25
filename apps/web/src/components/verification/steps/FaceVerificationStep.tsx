@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Camera, Check, RefreshCcw } from "lucide-react";
+import Webcam from "react-webcam";
 
 interface FaceVerificationStepProps {
 	onNext: () => void;
@@ -17,104 +18,38 @@ export default function FaceVerificationStep({
 	onBack,
 	onCapture,
 }: FaceVerificationStepProps) {
-	const [isCameraActive, setIsCameraActive] = useState(false);
+	const [isCameraReady, setIsCameraReady] = useState(false);
 	const [isCapturing, setIsCapturing] = useState(false);
 	const [capturedImage, setCapturedImage] = useState<string | null>(null);
-	const videoRef = useRef<HTMLVideoElement>(null);
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const streamRef = useRef<MediaStream | null>(null);
+	const webcamRef = useRef<Webcam>(null);
 
-	useEffect(() => {
-		startCamera();
-		return () => stopCamera();
+	const handleUserMedia = useCallback(() => {
+		console.log("Face verification camera ready");
+		setIsCameraReady(true);
 	}, []);
 
-	async function startCamera() {
-		try {
-			console.log("Starting camera for face verification...");
-
-			// Try with ideal constraints first
-			let stream: MediaStream;
-			try {
-				stream = await navigator.mediaDevices.getUserMedia({
-					video: {
-						width: { ideal: 1280 },
-						height: { ideal: 720 },
-						facingMode: "user",
-					},
-				});
-			} catch (idealErr) {
-				console.warn("Ideal constraints failed, trying basic:", idealErr);
-				stream = await navigator.mediaDevices.getUserMedia({
-					video: true,
-				});
-			}
-
-			streamRef.current = stream;
-
-			if (videoRef.current) {
-				videoRef.current.srcObject = stream;
-				await videoRef.current.play();
-				setIsCameraActive(true);
-				console.log("Face verification camera started");
-			}
-		} catch (err) {
-			console.error("Camera error in face verification:", err);
-			const errMsg = err instanceof Error ? err.message : "Unknown error";
-			toast.error("Failed to access camera", { description: errMsg });
-		}
-	}
-
-	function stopCamera() {
-		console.log("Stopping camera in face verification...");
-
-		if (streamRef.current) {
-			streamRef.current.getTracks().forEach((track) => {
-				track.stop();
-				console.log(`Stopped ${track.kind} track in FaceVerification`);
-			});
-			streamRef.current = null;
-		}
-
-		if (videoRef.current?.srcObject) {
-			const stream = videoRef.current.srcObject as MediaStream;
-			stream.getTracks().forEach((track) => {
-				track.stop();
-				console.log(
-					`Stopped ${track.kind} track from video element in FaceVerification`
-				);
-			});
-			videoRef.current.srcObject = null;
-		}
-
-		setIsCameraActive(false);
-	}
+	const handleUserMediaError = useCallback((error: string | DOMException) => {
+		console.error("Camera error in face verification:", error);
+		const errMsg =
+			typeof error === "string" ? error : error.message || "Camera error";
+		toast.error("Failed to access camera", { description: errMsg });
+	}, []);
 
 	async function capturePhoto() {
-		if (!videoRef.current || !canvasRef.current) return;
+		if (!webcamRef.current) return;
 
 		setIsCapturing(true);
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const canvas = canvasRef.current;
-			const video = videoRef.current;
+			const imageSrc = webcamRef.current.getScreenshot();
+			if (!imageSrc) {
+				throw new Error("Failed to capture screenshot");
+			}
 
-			canvas.width = video.videoWidth;
-			canvas.height = video.videoHeight;
-
-			const ctx = canvas.getContext("2d");
-			if (!ctx) return;
-
-			ctx.drawImage(video, 0, 0);
-
-			const blob: Blob = await new Promise((resolve, reject) => {
-				canvas.toBlob(
-					(b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
-					"image/jpeg",
-					0.9
-				);
-			});
+			// Convert to blob for upload
+			const response = await fetch(imageSrc);
+			const blob = await response.blob();
 
 			const form = new FormData();
 			form.append("file", blob, `face-${Date.now()}.jpg`);
@@ -126,6 +61,7 @@ export default function FaceVerificationStep({
 			onCapture(url);
 			toast.success("Photo captured successfully!");
 		} catch (error) {
+			console.error("Capture error:", error);
 			toast.error("Failed to capture photo");
 		} finally {
 			setIsCapturing(false);
@@ -134,8 +70,13 @@ export default function FaceVerificationStep({
 
 	function retake() {
 		setCapturedImage(null);
-		startCamera();
 	}
+
+	const videoConstraints = {
+		width: 1280,
+		height: 720,
+		facingMode: "user",
+	};
 
 	return (
 		<div className='space-y-6'>
@@ -147,63 +88,49 @@ export default function FaceVerificationStep({
 			</div>
 
 			<Card className='p-6'>
-				<div className='space-y-6'>
-					<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative'>
-						{/* Face guide overlay */}
-						{isCameraActive && !capturedImage && (
-							<div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-								<div className='w-64 h-64 border-2 border-white/50 rounded-full'></div>
-							</div>
-						)}
+				<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative mb-4'>
+					{!capturedImage ? (
+						<Webcam
+							ref={webcamRef}
+							audio={false}
+							screenshotFormat='image/jpeg'
+							videoConstraints={videoConstraints}
+							onUserMedia={handleUserMedia}
+							onUserMediaError={handleUserMediaError}
+							mirrored={true}
+							className='w-full h-full object-cover'
+						/>
+					) : (
+						<img
+							src={capturedImage}
+							alt='Captured face'
+							className='w-full h-full object-cover'
+						/>
+					)}
+				</div>
 
-						{/* Video feed or captured image */}
-						{capturedImage ? (
-							<img
-								src={capturedImage}
-								alt='Captured face'
-								className='w-full h-full object-cover'
-							/>
-						) : (
-							<video
-								ref={videoRef}
-								autoPlay
-								playsInline
-								muted
-								className='w-full h-full object-cover mirror'
-							/>
-						)}
-
-						{/* Hidden canvas for capture */}
-						<canvas ref={canvasRef} className='hidden' />
-
-						{/* Capture animation overlay */}
-						{isCapturing && (
-							<div className='absolute inset-0 bg-white/20 animate-flash' />
-						)}
-					</div>
-
-					<div className='flex gap-3 justify-center'>
-						{!capturedImage ? (
-							<Button
-								onClick={capturePhoto}
-								disabled={!isCameraActive || isCapturing}
-							>
-								<Camera className='w-4 h-4 mr-2' />
-								{isCapturing ? "Capturing..." : "Take Photo"}
+				<div className='flex gap-2'>
+					{!capturedImage ? (
+						<Button
+							onClick={capturePhoto}
+							disabled={!isCameraReady || isCapturing}
+							className='flex-1'
+						>
+							<Camera className='mr-2 h-4 w-4' />
+							{isCapturing ? "Capturing..." : "Capture Photo"}
+						</Button>
+					) : (
+						<>
+							<Button onClick={retake} variant='outline' className='flex-1'>
+								<RefreshCcw className='mr-2 h-4 w-4' />
+								Retake
 							</Button>
-						) : (
-							<>
-								<Button variant='outline' onClick={retake}>
-									<RefreshCcw className='w-4 h-4 mr-2' />
-									Retake Photo
-								</Button>
-								<Button onClick={onNext}>
-									<Check className='w-4 h-4 mr-2' />
-									Confirm & Continue
-								</Button>
-							</>
-						)}
-					</div>
+							<Button onClick={onNext} className='flex-1'>
+								<Check className='mr-2 h-4 w-4' />
+								Continue
+							</Button>
+						</>
+					)}
 				</div>
 			</Card>
 

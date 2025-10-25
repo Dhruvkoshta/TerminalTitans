@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Camera, Mic, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import Webcam from "react-webcam";
 
 interface SystemCheckStepProps {
 	onNext: () => void;
@@ -21,155 +22,90 @@ export default function SystemCheckStep({
 	const [micStatus, setMicStatus] = useState<"pending" | "success" | "error">(
 		"pending"
 	);
-	const [isChecking, setIsChecking] = useState(false);
-	const [errorDetails, setErrorDetails] = useState<string>("");
-	const videoRef = useRef<HTMLVideoElement>(null);
+	const [isChecking, setIsChecking] = useState(true);
+	const webcamRef = useRef<Webcam>(null);
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const analyserRef = useRef<AnalyserNode | null>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const animationFrameRef = useRef<number | null>(null);
-	const streamRef = useRef<MediaStream | null>(null);
+	const [errorMessage, setErrorMessage] = useState<string>("");
 
 	useEffect(() => {
-		// Check if we're on HTTPS in production
-		const isSecure =
-			window.location.protocol === "https:" ||
-			window.location.hostname === "localhost";
-		if (!isSecure) {
-			console.warn("Camera access requires HTTPS in production");
-			setErrorDetails("Camera access requires HTTPS");
-		}
-
-		checkDevices();
 		return () => {
-			stopDevices();
+			stopAudioVisualization();
 		};
 	}, []);
 
-	async function checkDevices() {
-		setIsChecking(true);
-		setErrorDetails("");
+	const handleUserMedia = useCallback(() => {
+		console.log("Webcam loaded successfully");
+		setCameraStatus("success");
+		setIsChecking(false);
+		setTimeout(setupAudio, 100);
+	}, []);
 
+	const handleUserMediaError = useCallback((error: string | DOMException) => {
+		console.error("Webcam error:", error);
+		setCameraStatus("error");
+		setMicStatus("error");
+		setIsChecking(false);
+
+		let errMsg = "Failed to access camera/microphone";
+		if (typeof error === "string") {
+			errMsg = error;
+		} else if (error instanceof DOMException) {
+			switch (error.name) {
+				case "NotAllowedError":
+				case "PermissionDeniedError":
+					errMsg = "Permission denied. Please allow camera and microphone access.";
+					break;
+				case "NotFoundError":
+					errMsg = "No camera or microphone found.";
+					break;
+				case "NotReadableError":
+					errMsg = "Camera/microphone is already in use.";
+					break;
+				default:
+					errMsg = error.message || "Unknown error";
+			}
+		}
+
+		setErrorMessage(errMsg);
+		toast.error("Device Access Failed", { description: errMsg });
+	}, []);
+
+	async function setupAudio() {
 		try {
-			// Check if mediaDevices is available
-			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-				throw new Error("getUserMedia is not supported in this browser");
+			const stream = webcamRef.current?.stream;
+			if (!stream) {
+				console.log("No stream available yet");
+				return;
 			}
 
-			console.log("Requesting camera and microphone access...");
-
-			// Try with ideal constraints first, fall back to basic if needed
-			let stream: MediaStream;
-			try {
-				stream = await navigator.mediaDevices.getUserMedia({
-					video: {
-						width: { ideal: 1280 },
-						height: { ideal: 720 },
-						facingMode: "user",
-					},
-					audio: true,
-				});
-			} catch (idealErr) {
-				console.warn(
-					"Ideal constraints failed, trying basic constraints:",
-					idealErr
-				);
-				// Fallback to basic constraints
-				stream = await navigator.mediaDevices.getUserMedia({
-					video: true,
-					audio: true,
-				});
+			const audioTracks = stream.getAudioTracks();
+			if (audioTracks.length === 0) {
+				throw new Error("No audio track found");
 			}
 
-			console.log("Camera access granted:", stream.getTracks());
-			streamRef.current = stream;
-
-			// Setup video
-			if (videoRef.current) {
-				videoRef.current.srcObject = stream;
-				// Wait for video to be ready
-				await new Promise<void>((resolve, reject) => {
-					if (!videoRef.current) {
-						reject(new Error("Video ref lost"));
-						return;
-					}
-					videoRef.current.onloadedmetadata = () => {
-						videoRef.current?.play().then(resolve).catch(reject);
-					};
-					videoRef.current.onerror = () => {
-						reject(new Error("Video element error"));
-					};
-					// Timeout after 5 seconds
-					setTimeout(() => reject(new Error("Video load timeout")), 5000);
-				});
-
-				setCameraStatus("success");
-				console.log("Camera setup successful");
-			}
-
-			// Setup audio visualizer
+			console.log("Setting up audio visualizer...");
 			const audioContext = new (window.AudioContext ||
 				(window as any).webkitAudioContext)();
 			const analyser = audioContext.createAnalyser();
 			const source = audioContext.createMediaStreamSource(stream);
 			source.connect(analyser);
 			analyser.fftSize = 256;
+
 			audioContextRef.current = audioContext;
 			analyserRef.current = analyser;
 			setMicStatus("success");
-			console.log("Microphone setup successful");
 
-			// Start audio visualization
+			console.log("Audio visualizer setup complete");
 			visualizeAudio();
 		} catch (err) {
-			console.error("Device check error:", err);
-
-			let errorMessage = "Error accessing devices";
-			let errorDetail = "";
-
-			if (err instanceof Error) {
-				errorDetail = err.message;
-
-				switch (err.name) {
-					case "NotAllowedError":
-					case "PermissionDeniedError":
-						errorMessage = "Camera/Microphone permission denied";
-						errorDetail =
-							"Please allow access to your camera and microphone in browser settings";
-						break;
-					case "NotFoundError":
-					case "DevicesNotFoundError":
-						errorMessage = "No camera or microphone found";
-						errorDetail = "Please connect a camera and microphone";
-						break;
-					case "NotReadableError":
-					case "TrackStartError":
-						errorMessage = "Camera/Microphone is already in use";
-						errorDetail =
-							"Please close other applications using your camera/microphone";
-						break;
-					case "OverconstrainedError":
-						errorMessage = "Camera constraints not supported";
-						errorDetail = "Your camera doesn't meet the requirements";
-						break;
-					case "SecurityError":
-						errorMessage = "Security error";
-						errorDetail =
-							"Camera access requires HTTPS. Current protocol: " +
-							window.location.protocol;
-						break;
-					default:
-						errorMessage = "Failed to access camera/microphone";
-						errorDetail = err.message || "Unknown error";
-				}
-			}
-
-			setErrorDetails(errorDetail);
-			toast.error(errorMessage, { description: errorDetail });
-			setCameraStatus("error");
+			console.error("Audio setup error:", err);
 			setMicStatus("error");
-		} finally {
-			setIsChecking(false);
+			const errMsg =
+				err instanceof Error ? err.message : "Failed to setup microphone";
+			toast.error("Microphone Error", { description: errMsg });
 		}
 	}
 
@@ -188,7 +124,7 @@ export default function SystemCheckStep({
 			animationFrameRef.current = requestAnimationFrame(draw);
 			analyserRef.current.getByteFrequencyData(dataArray);
 
-			ctx.fillStyle = "rgb(30, 41, 59)"; // slate-800
+			ctx.fillStyle = "rgb(30, 41, 59)";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 			const barWidth = (canvas.width / bufferLength) * 2.5;
@@ -206,48 +142,32 @@ export default function SystemCheckStep({
 		draw();
 	}
 
-	function stopDevices() {
-		console.log("Stopping devices...");
-
-		// Cancel any pending animation frames
-		if (animationFrameRef.current !== null) {
+	function stopAudioVisualization() {
+		if (animationFrameRef.current) {
 			cancelAnimationFrame(animationFrameRef.current);
 			animationFrameRef.current = null;
 		}
 
-		// Stop stream tracks
-		if (streamRef.current) {
-			streamRef.current.getTracks().forEach((track) => {
-				track.stop();
-				console.log(`Stopped ${track.kind} track`);
-			});
-			streamRef.current = null;
-		}
-
-		// Stop video tracks from video element as fallback
-		if (videoRef.current?.srcObject) {
-			const stream = videoRef.current.srcObject as MediaStream;
-			stream.getTracks().forEach((track) => {
-				track.stop();
-				console.log(`Stopped ${track.kind} track from video element`);
-			});
-			videoRef.current.srcObject = null;
-		}
-
-		// Close audio context
 		if (audioContextRef.current) {
-			audioContextRef.current.close().catch((err) => {
-				console.error("Error closing audio context:", err);
-			});
+			audioContextRef.current.close().catch(console.error);
 			audioContextRef.current = null;
 		}
 
-		// Clear analyser reference
 		analyserRef.current = null;
-		console.log("All devices stopped");
 	}
 
 	const allChecksPass = cameraStatus === "success" && micStatus === "success";
+
+	const videoConstraints = {
+		width: 1280,
+		height: 720,
+		facingMode: "user",
+	};
+
+	const audioConstraints = {
+		echoCancellation: true,
+		noiseSuppression: true,
+	};
 
 	return (
 		<div className='space-y-6'>
@@ -260,7 +180,6 @@ export default function SystemCheckStep({
 
 			<Card className='p-6 space-y-6'>
 				<div className='grid md:grid-cols-2 gap-6'>
-					{/* Camera Preview */}
 					<div className='space-y-4'>
 						<div className='flex items-center justify-between'>
 							<div className='flex items-center gap-2'>
@@ -270,23 +189,24 @@ export default function SystemCheckStep({
 							<StatusIndicator status={cameraStatus} />
 						</div>
 						<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative'>
-							{isChecking ? (
-								<div className='absolute inset-0 flex items-center justify-center'>
+							{isChecking && (
+								<div className='absolute inset-0 flex items-center justify-center z-10'>
 									<Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
 								</div>
-							) : (
-								<video
-									ref={videoRef}
-									autoPlay
-									playsInline
-									muted
-									className='w-full h-full object-cover'
-								/>
 							)}
+							<Webcam
+								ref={webcamRef}
+								audio={true}
+								videoConstraints={videoConstraints}
+								audioConstraints={audioConstraints}
+								onUserMedia={handleUserMedia}
+								onUserMediaError={handleUserMediaError}
+								mirrored={true}
+								className='w-full h-full object-cover'
+							/>
 						</div>
 					</div>
 
-					{/* Microphone Visualizer */}
 					<div className='space-y-4'>
 						<div className='flex items-center justify-between'>
 							<div className='flex items-center gap-2'>
@@ -315,36 +235,16 @@ export default function SystemCheckStep({
 					</div>
 				</div>
 
-				{/* Error details */}
-				{errorDetails && (
+				{errorMessage && (
 					<div className='bg-red-950/30 border border-red-900 rounded-lg p-4'>
 						<div className='flex items-start gap-3'>
 							<AlertCircle className='h-5 w-5 text-red-500 shrink-0 mt-0.5' />
 							<div className='flex-1'>
-								<p className='font-semibold text-red-500 mb-1'>Error Details</p>
-								<p className='text-sm text-red-300'>{errorDetails}</p>
-								{window.location.protocol !== "https:" &&
-									window.location.hostname !== "localhost" && (
-										<p className='text-sm text-red-300 mt-2'>
-											⚠️ Camera access requires HTTPS. Please ensure your site
-											is served over HTTPS.
-										</p>
-									)}
+								<p className='font-semibold text-red-500 mb-1'>Error</p>
+								<p className='text-sm text-red-300'>{errorMessage}</p>
 							</div>
 						</div>
 					</div>
-				)}
-
-				{/* Retry button shown on error */}
-				{(cameraStatus === "error" || micStatus === "error") && (
-					<Button
-						variant='outline'
-						onClick={checkDevices}
-						disabled={isChecking}
-						className='w-full'
-					>
-						{isChecking ? "Checking..." : "Retry Device Check"}
-					</Button>
 				)}
 			</Card>
 
