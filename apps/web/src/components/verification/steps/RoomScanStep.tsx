@@ -10,9 +10,10 @@ import { Camera, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 interface RoomScanStepProps {
   onNext: () => void;
   onBack: () => void;
+  onCapture: (videoDataUrl: string) => void;
 }
 
-export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
+export default function RoomScanStep({ onNext, onBack, onCapture }: RoomScanStepProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -20,17 +21,30 @@ export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
 
   const SCAN_DURATION = 15; // seconds
 
+  async function uploadBlob(blob: Blob, name: string): Promise<string> {
+    const form = new FormData();
+    form.append("file", blob, name);
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    if (!res.ok) throw new Error("Upload failed");
+    const { url } = await res.json();
+    return url as string;
+  }
+
   async function startScan() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const mediaRecorder = new MediaRecorder(stream);
       const chunks: BlobPart[] = [];
-      
+
       mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunks, { type: "video/webm" });
         setRecordedBlob(blob);
-        stream.getTracks().forEach(track => track.stop());
+        try {
+          const url = await uploadBlob(blob, `room-${Date.now()}.webm`);
+          onCapture(url);
+        } catch (_) {}
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       setIsRecording(true);
@@ -42,7 +56,7 @@ export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
       const timer = setInterval(() => {
         const elapsed = (Date.now() - startTime) / 1000;
         const percentage = (elapsed / SCAN_DURATION) * 100;
-        
+
         if (elapsed >= SCAN_DURATION) {
           clearInterval(timer);
           mediaRecorder.stop();
@@ -54,7 +68,6 @@ export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
           setProgress(percentage);
         }
       }, 100);
-
     } catch (err) {
       toast.error("Failed to access camera");
       setIsRecording(false);
@@ -124,7 +137,7 @@ export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
                 Start Room Scan
               </Button>
             )}
-            
+
             {isComplete && (
               <>
                 <Button variant="outline" onClick={resetScan}>
@@ -137,12 +150,9 @@ export default function RoomScanStep({ onNext, onBack }: RoomScanStepProps) {
                 </Button>
               </>
             )}
-            
+
             {isRecording && (
-              <Button 
-                variant="destructive" 
-                onClick={resetScan}
-              >
+              <Button variant="destructive" onClick={resetScan}>
                 <XCircle className="w-4 h-4 mr-2" />
                 Cancel Scan
               </Button>

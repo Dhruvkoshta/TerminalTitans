@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, serial, integer, jsonb, pgEnum } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -69,6 +69,8 @@ export const logs = pgTable("logs", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const examStatusEnum = pgEnum("exam_status", ["draft", "published", "archived"]);
+
 export const exams = pgTable("exams", {
 	id: serial("id").primaryKey(),
 	name: text("name").notNull(),
@@ -77,5 +79,60 @@ export const exams = pgTable("exams", {
 	dateTimeStart: timestamp("date_time_start").notNull(),
 	duration: integer("duration").notNull(),
 	examCode: text("exam_code").notNull(),
+	status: examStatusEnum("status").default("draft").notNull(),
+	settings: jsonb("settings"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const examQuestions = pgTable("exam_questions", {
+	id: serial("id").primaryKey(),
+	examId: integer("exam_id").notNull(),
+	type: text("type").notNull(), // mcq | coding | short
+	title: text("title").notNull(),
+	prompt: text("prompt"),
+	points: integer("points").notNull().default(1),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const mcqOptions = pgTable("mcq_options", {
+	id: serial("id").primaryKey(),
+	questionId: integer("question_id").notNull(),
+	text: text("text").notNull(),
+	isCorrect: boolean("is_correct").notNull().default(false),
+});
+
+export const codingTestCases = pgTable("coding_test_cases", {
+	id: serial("id").primaryKey(),
+	questionId: integer("question_id").notNull(),
+	input: text("input").notNull(),
+	expectedOutput: text("expected_output").notNull(),
+});
+
+export const attempts = pgTable("attempts", {
+	id: serial("id").primaryKey(),
+	examId: integer("exam_id").notNull(),
+	studentId: text("student_id").notNull(),
+	startedAt: timestamp("started_at").notNull().defaultNow(),
+	submittedAt: timestamp("submitted_at"),
+	score: integer("score"),
+	proctoringSummary: jsonb("proctoring_summary"),
+});
+
+export const responses = pgTable("responses", {
+	id: serial("id").primaryKey(),
+	attemptId: integer("attempt_id").notNull(),
+	questionId: integer("question_id").notNull(),
+	answerText: text("answer_text"),
+	answerJson: jsonb("answer_json"), // for MCQ option ids, coding outputs
+	isCorrect: boolean("is_correct"),
+	awardedPoints: integer("awarded_points"),
+});
+
+export const verificationArtifacts = pgTable("verification_artifacts", {
+	id: serial("id").primaryKey(),
+	attemptId: integer("attempt_id").notNull(),
+	type: text("type").notNull(), // face|room|id
+	url: text("url").notNull(),
+	meta: jsonb("meta"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });

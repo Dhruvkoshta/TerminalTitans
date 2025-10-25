@@ -14,4 +14,3 @@ export default function Dashboard({
 	}
 	return <StudentDashboard session={session} />;
 }
-

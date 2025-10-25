@@ -84,9 +84,15 @@ export default function IDVerificationPage() {
         
         ctx.drawImage(videoRef.current, 0, 0, videoWidth, videoHeight);
 
-        // Convert to image
-        const imageData = canvasRef.current.toDataURL("image/jpeg", 0.8);
-        setCapturedImage(imageData);
+        const blob: Blob = await new Promise((resolve, reject) => {
+          canvasRef.current!.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/jpeg", 0.8);
+        });
+        const form = new FormData();
+        form.append("file", blob, `id-${Date.now()}.jpg`);
+        const res = await fetch("/api/upload", { method: "POST", body: form });
+        if (!res.ok) throw new Error("Upload failed");
+        const { url } = await res.json();
+        setCapturedImage(url);
         stopCamera();
         toast.success("Photo captured successfully!");
       } catch (error) {
@@ -99,11 +105,13 @@ export default function IDVerificationPage() {
   async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCapturedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (res.ok) {
+        const { url } = await res.json();
+        setCapturedImage(url);
+      }
     }
   }
 

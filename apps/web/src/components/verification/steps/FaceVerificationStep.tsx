@@ -9,9 +9,10 @@ import { Camera, Check, RefreshCcw } from "lucide-react";
 interface FaceVerificationStepProps {
   onNext: () => void;
   onBack: () => void;
+  onCapture: (imageDataUrl: string) => void;
 }
 
-export default function FaceVerificationStep({ onNext, onBack }: FaceVerificationStepProps) {
+export default function FaceVerificationStep({ onNext, onBack, onCapture }: FaceVerificationStepProps) {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -25,8 +26,8 @@ export default function FaceVerificationStep({ onNext, onBack }: FaceVerificatio
 
   async function startCamera() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 1280, height: 720 } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720 },
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -40,31 +41,41 @@ export default function FaceVerificationStep({ onNext, onBack }: FaceVerificatio
   function stopCamera() {
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       setIsCameraActive(false);
     }
   }
 
   async function capturePhoto() {
     if (!videoRef.current || !canvasRef.current) return;
-    
+
     setIsCapturing(true);
     try {
-      // Play capture animation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const canvas = canvasRef.current;
       const video = videoRef.current;
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      
+
       ctx.drawImage(video, 0, 0);
-      const imageData = canvas.toDataURL("image/jpeg");
-      setCapturedImage(imageData);
+
+      const blob: Blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/jpeg", 0.9);
+      });
+
+      const form = new FormData();
+      form.append("file", blob, `face-${Date.now()}.jpg`);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+
+      setCapturedImage(url);
+      onCapture(url);
       toast.success("Photo captured successfully!");
     } catch (error) {
       toast.error("Failed to capture photo");
@@ -96,7 +107,7 @@ export default function FaceVerificationStep({ onNext, onBack }: FaceVerificatio
                 <div className="w-64 h-64 border-2 border-white/50 rounded-full"></div>
               </div>
             )}
-            
+
             {/* Video feed or captured image */}
             {capturedImage ? (
               <img
@@ -113,22 +124,17 @@ export default function FaceVerificationStep({ onNext, onBack }: FaceVerificatio
                 className="w-full h-full object-cover mirror"
               />
             )}
-            
+
             {/* Hidden canvas for capture */}
             <canvas ref={canvasRef} className="hidden" />
-            
+
             {/* Capture animation overlay */}
-            {isCapturing && (
-              <div className="absolute inset-0 bg-white/20 animate-flash" />
-            )}
+            {isCapturing && <div className="absolute inset-0 bg-white/20 animate-flash" />}
           </div>
 
           <div className="flex gap-3 justify-center">
             {!capturedImage ? (
-              <Button 
-                onClick={capturePhoto}
-                disabled={!isCameraActive || isCapturing}
-              >
+              <Button onClick={capturePhoto} disabled={!isCameraActive || isCapturing}>
                 <Camera className="w-4 h-4 mr-2" />
                 {isCapturing ? "Capturing..." : "Take Photo"}
               </Button>

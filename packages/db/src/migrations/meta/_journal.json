@@ -15,6 +15,13 @@
       "when": 1761326286689,
       "tag": "0001_even_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761405790228,
+      "tag": "0002_pink_harrier",
+      "breakpoints": true
     }
   ]
 }

@@ -6,19 +6,29 @@ export async function GET(req: Request) {
   const exam_code = searchParams.get("exam_code");
   const prof_email = searchParams.get("prof_email");
 
-  if (!exam_code || !prof_email) {
-    return Response.json({ message: "exam_code and prof_email are required" }, { status: 400 });
+  if (!prof_email) {
+    return Response.json({ message: "prof_email is required" }, { status: 400 });
   }
 
-  const result = await db
+  if (exam_code) {
+    const result = await db
+      .select()
+      .from(exams)
+      .where(and(eq(exams.examCode, exam_code), eq(exams.profEmail, prof_email)))
+      .limit(1);
+
+    if (!result.length) {
+      return Response.json({ message: "Exam doesn't exist or professor doesnt have permission" }, { status: 404 });
+    }
+
+    return Response.json(result[0]);
+  }
+
+  const list = await db
     .select()
     .from(exams)
-    .where(and(eq(exams.examCode, exam_code), eq(exams.profEmail, prof_email)))
-    .limit(1);
+    .where(eq(exams.profEmail, prof_email));
 
-  if (!result.length) {
-    return Response.json({ message: "Exam doesn't exist or professor doesnt have permission" }, { status: 400 });
-  }
-
-  return Response.json(result[0]);
+  return Response.json(list);
 }
+
