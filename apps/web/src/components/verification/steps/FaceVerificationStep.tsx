@@ -22,6 +22,7 @@ export default function FaceVerificationStep({
 	const [capturedImage, setCapturedImage] = useState<string | null>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const streamRef = useRef<MediaStream | null>(null);
 
 	useEffect(() => {
 		startCamera();
@@ -30,28 +31,63 @@ export default function FaceVerificationStep({
 
 	async function startCamera() {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { width: 1280, height: 720 },
-			});
+			console.log("Starting camera for face verification...");
+
+			// Try with ideal constraints first
+			let stream: MediaStream;
+			try {
+				stream = await navigator.mediaDevices.getUserMedia({
+					video: {
+						width: { ideal: 1280 },
+						height: { ideal: 720 },
+						facingMode: "user",
+					},
+				});
+			} catch (idealErr) {
+				console.warn("Ideal constraints failed, trying basic:", idealErr);
+				stream = await navigator.mediaDevices.getUserMedia({
+					video: true,
+				});
+			}
+
+			streamRef.current = stream;
+
 			if (videoRef.current) {
 				videoRef.current.srcObject = stream;
+				await videoRef.current.play();
 				setIsCameraActive(true);
+				console.log("Face verification camera started");
 			}
 		} catch (err) {
-			toast.error("Failed to access camera");
+			console.error("Camera error in face verification:", err);
+			const errMsg = err instanceof Error ? err.message : "Unknown error";
+			toast.error("Failed to access camera", { description: errMsg });
 		}
 	}
 
 	function stopCamera() {
+		console.log("Stopping camera in face verification...");
+
+		if (streamRef.current) {
+			streamRef.current.getTracks().forEach((track) => {
+				track.stop();
+				console.log(`Stopped ${track.kind} track in FaceVerification`);
+			});
+			streamRef.current = null;
+		}
+
 		if (videoRef.current?.srcObject) {
 			const stream = videoRef.current.srcObject as MediaStream;
 			stream.getTracks().forEach((track) => {
 				track.stop();
-				console.log(`Stopped ${track.kind} track in FaceVerification`);
+				console.log(
+					`Stopped ${track.kind} track from video element in FaceVerification`
+				);
 			});
 			videoRef.current.srcObject = null;
-			setIsCameraActive(false);
 		}
+
+		setIsCameraActive(false);
 	}
 
 	async function capturePhoto() {
