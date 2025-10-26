@@ -10,7 +10,11 @@ export const auth = betterAuth<BetterAuthOptions>({
 
 		schema: schema,
 	}),
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	trustedOrigins: [
+		process.env.CORS_ORIGIN || "",
+		"http://localhost:3001",
+		"https://terminal-titans-web.vercel.app"
+	],
 	emailAndPassword: {
 		enabled: true,
 	},
