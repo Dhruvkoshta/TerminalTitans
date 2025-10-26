@@ -11,23 +11,24 @@ import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { CircleUser } from "lucide-react";
 
 export default function UserMenu() {
 	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <Skeleton className="h-9 w-24" />;
+		return <Skeleton className='h-9 w-24' />;
 	}
 
 	if (!session) {
 		return (
-			<div className="flex items-center gap-2">
-				<Button variant="ghost" asChild>
-					<Link href={'/signin' as any}>Sign In</Link>
+			<div className='flex items-center gap-2'>
+				<Button variant='ghost' asChild>
+					<Link href={"/signin" as any}>Sign In</Link>
 				</Button>
 				<Button asChild>
-					<Link href={'/signup' as any}>Sign Up</Link>
+					<Link href={"/signup" as any}>Sign Up</Link>
 				</Button>
 			</div>
 		);
@@ -36,16 +37,19 @@ export default function UserMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline">{session.user.name}</Button>
+				<Button variant='outline'>
+					<CircleUser />
+					{session.user.name}
+				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card">
+			<DropdownMenuContent className='bg-card'>
 				<DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<Button
-						variant="destructive"
-						className="w-full"
+						variant='destructive'
+						className='w-full'
 						onClick={() => {
 							authClient.signOut({
 								fetchOptions: {

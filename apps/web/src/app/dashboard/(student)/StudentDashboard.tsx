@@ -146,10 +146,10 @@ export default function StudentDashboard({
 	}
 
 	return (
-		<div className='space-y-8 max-w-7xl mx-auto'>
+		<div className='space-y-8 max-w-7xl mx-auto pt-6'>
 			{/* Welcome Header */}
 			<div className='space-y-2'>
-				<h1 className='text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+				<h1 className='text-4xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent'>
 					Welcome back, {session.user?.name?.split(" ")[0]}! 👋
 				</h1>
 				<p className='text-lg text-muted-foreground'>
@@ -159,7 +159,7 @@ export default function StudentDashboard({
 			</div>
 
 			{/* Quick Start Exam Card */}
-			<Card className='border-2 border-blue-200 bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950'>
+			<Card className='border-2 border-primary/20 bg-linear-to-br from-primary/5 to-accent/5'>
 				<CardHeader>
 					<CardTitle className='flex items-center gap-2'>
 						<Code className='w-5 h-5' />
@@ -255,14 +255,14 @@ export default function StudentDashboard({
 			{examsData.upcomingExams.length > 0 && (
 				<div className='space-y-4'>
 					<h2 className='text-2xl font-semibold flex items-center gap-2'>
-						<Calendar className='w-6 h-6 text-blue-500' />
+						<Calendar className='w-6 h-6 text-primary' />
 						Upcoming Exams
 					</h2>
 					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
 						{examsData.upcomingExams.map((exam) => (
 							<Card
 								key={exam.id}
-								className='border-2 border-blue-200 hover:shadow-lg transition-shadow'
+								className='border-2 border-primary/20 hover:shadow-lg transition-shadow'
 							>
 								<CardHeader>
 									<CardTitle className='text-lg'>{exam.name}</CardTitle>
@@ -285,7 +285,7 @@ export default function StudentDashboard({
 									</div>
 									<div className='flex items-center justify-between text-sm'>
 										<span className='text-muted-foreground'>Status:</span>
-										<span className='px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs font-medium'>
+										<span className='px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium'>
 											Scheduled
 										</span>
 									</div>
@@ -300,14 +300,14 @@ export default function StudentDashboard({
 			{examsData.pastExams.length > 0 && (
 				<div className='space-y-4'>
 					<h2 className='text-2xl font-semibold flex items-center gap-2'>
-						<CheckCircle2 className='w-6 h-6 text-gray-500' />
+						<CheckCircle2 className='w-6 h-6 text-muted-foreground' />
 						Past Exams
 					</h2>
 					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
 						{examsData.pastExams.map((exam) => (
 							<Card
 								key={exam.id}
-								className='border border-gray-200 hover:shadow-lg transition-shadow opacity-80'
+								className='border border-border hover:shadow-lg transition-shadow opacity-80'
 							>
 								<CardHeader>
 									<CardTitle className='text-lg'>{exam.name}</CardTitle>
@@ -336,7 +336,7 @@ export default function StudentDashboard({
 												Completed
 											</span>
 										) : (
-											<span className='px-2 py-1 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded text-xs font-medium'>
+											<span className='px-2 py-1 bg-muted text-muted-foreground rounded text-xs font-medium'>
 												Not Attempted
 											</span>
 										)}
@@ -369,7 +369,7 @@ export default function StudentDashboard({
 
 			{loading && (
 				<div className='flex justify-center py-12'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
 				</div>
 			)}
 		</div>

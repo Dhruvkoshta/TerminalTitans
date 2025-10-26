@@ -211,8 +211,8 @@ export default function ExamQuestionsArea({
 		return (
 			<div className='h-[calc(100vh-200px)] flex items-center justify-center'>
 				<div className='text-center'>
-					<div className='w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4'></div>
-					<p className='text-slate-400'>Loading exam...</p>
+					<div className='w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4'></div>
+					<p className='text-muted-foreground'>Loading exam...</p>
 				</div>
 			</div>
 		);
@@ -221,7 +221,7 @@ export default function ExamQuestionsArea({
 	if (!examData || !currentQuestion) {
 		return (
 			<div className='h-[calc(100vh-200px)] flex items-center justify-center'>
-				<div className='text-center text-slate-400'>
+				<div className='text-center text-muted-foreground'>
 					<AlertCircle className='w-16 h-16 mx-auto mb-4' />
 					<p className='text-xl mb-2'>Exam Not Found</p>
 					<p className='text-sm'>
@@ -232,43 +232,138 @@ export default function ExamQuestionsArea({
 		);
 	}
 
+	// LeetCode-style layout for coding questions
+	const isCodingQuestion = currentQuestion.type === "coding";
+
 	return (
 		<div className='h-[calc(100vh-200px)] flex flex-col'>
-			{/* Question Card */}
-			<div className='flex-1 overflow-y-auto mb-4'>
-				<div className='bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-t-lg p-4'>
-					<div className='flex items-start justify-between'>
-						<div className='flex-1'>
-							<h3 className='text-xl font-bold mb-1 flex items-center gap-2'>
-								{currentQuestion.type === "mcq" && (
-									<CheckCircle2 className='w-5 h-5' />
+			{/* Header - always show */}
+			<div className='shrink-0 bg-linear-to-r from-primary to-accent text-background p-4 rounded-t-lg'>
+				<div className='flex items-start justify-between'>
+					<div className='flex-1'>
+						<h3 className='text-xl font-bold mb-1 flex items-center gap-2'>
+							{currentQuestion.type === "mcq" && (
+								<CheckCircle2 className='w-5 h-5' />
+							)}
+							{currentQuestion.type === "coding" && (
+								<Code2 className='w-5 h-5' />
+							)}
+							{currentQuestion.type === "short" && (
+								<FileText className='w-5 h-5' />
+							)}
+							Question {currentQuestionIndex + 1}: {currentQuestion.title}
+						</h3>
+						<p className='text-primary-foreground/80 text-sm'>
+							{currentQuestion.type === "mcq" && "Multiple Choice Question"}
+							{currentQuestion.type === "coding" && "Coding Question"}
+							{currentQuestion.type === "short" && "Short Answer"}
+						</p>
+					</div>
+					<div className='bg-background/20 px-3 py-1 rounded-lg'>
+						<p className='text-sm font-semibold'>
+							{currentQuestion.points} points
+						</p>
+					</div>
+				</div>
+			</div>
+
+			{/* Content Area - Split for coding, Full for others */}
+			{isCodingQuestion ? (
+				<div className='flex-1 flex gap-0 overflow-hidden'>
+					{/* Left Panel - Question Description */}
+					<div className='flex-1 bg-card overflow-y-auto border-r border-border'>
+						<div className='p-4 space-y-4'>
+							{/* Question Prompt */}
+							<div>
+								<h4 className='text-sm font-semibold text-foreground mb-2'>
+									Description
+								</h4>
+								<div className='p-3 bg-secondary rounded-lg border border-border'>
+									<p className='text-foreground whitespace-pre-wrap leading-relaxed text-sm'>
+										{currentQuestion.prompt}
+									</p>
+								</div>
+							</div>
+
+							{/* Test Cases */}
+							{currentQuestion.testCases &&
+								currentQuestion.testCases.length > 0 && (
+									<div>
+										<h4 className='text-sm font-semibold text-foreground mb-2'>
+											Test Cases
+										</h4>
+										<div className='space-y-2'>
+											{currentQuestion.testCases.map((testCase, idx) => (
+												<div
+													key={testCase.id}
+													className='p-3 bg-secondary rounded-lg border border-border'
+												>
+													<p className='text-xs font-medium text-muted-foreground mb-2'>
+														Example {idx + 1}
+													</p>
+													<div className='space-y-1 text-xs'>
+														<div>
+															<span className='text-muted-foreground font-medium'>
+																Input:
+															</span>
+															<code className='block mt-1 p-2 bg-background rounded border border-border font-mono text-foreground'>
+																{testCase.input}
+															</code>
+														</div>
+														<div>
+															<span className='text-muted-foreground font-medium'>
+																Output:
+															</span>
+															<code className='block mt-1 p-2 bg-background rounded border border-border font-mono text-foreground'>
+																{testCase.expectedOutput}
+															</code>
+														</div>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
 								)}
-								{currentQuestion.type === "coding" && (
-									<Code2 className='w-5 h-5' />
-								)}
-								{currentQuestion.type === "short" && (
-									<FileText className='w-5 h-5' />
-								)}
-								Question {currentQuestionIndex + 1}: {currentQuestion.title}
-							</h3>
-							<p className='text-blue-100 text-sm'>
-								{currentQuestion.type === "mcq" && "Multiple Choice Question"}
-								{currentQuestion.type === "coding" && "Coding Question"}
-								{currentQuestion.type === "short" && "Short Answer"}
-							</p>
 						</div>
-						<div className='bg-white/20 px-3 py-1 rounded-lg'>
-							<p className='text-sm font-semibold'>
-								{currentQuestion.points} points
-							</p>
+					</div>
+
+					{/* Right Panel - Code Editor */}
+					<div className='flex-1 bg-background flex flex-col'>
+						<div className='shrink-0 px-4 py-3 border-b border-border bg-card'>
+							<Label className='text-sm font-semibold text-foreground'>
+								Solution
+							</Label>
+						</div>
+						<div className='flex-1 overflow-hidden'>
+							<Editor
+								defaultLanguage='python'
+								theme={theme === "dark" ? "vs-dark" : "light"}
+								value={answers[currentQuestion.id]?.code || ""}
+								onChange={(value) =>
+									dispatch({
+										type: "SET_CODE",
+										questionId: currentQuestion.id,
+										code: value || "",
+									})
+								}
+								options={{
+									minimap: { enabled: false },
+									fontSize: 13,
+									lineNumbers: "on",
+									scrollBeyondLastLine: false,
+									automaticLayout: true,
+									padding: { top: 16, bottom: 16 },
+									wordWrap: "on",
+								}}
+							/>
 						</div>
 					</div>
 				</div>
-
-				<div className='bg-slate-700 p-4'>
+			) : (
+				<div className='flex-1 overflow-y-auto bg-card p-4'>
 					{/* Question Prompt */}
-					<div className='mb-4 p-3 bg-slate-800 rounded-lg border border-slate-600'>
-						<p className='text-slate-200 whitespace-pre-wrap leading-relaxed'>
+					<div className='mb-4 p-3 bg-secondary rounded-lg border border-border'>
+						<p className='text-foreground whitespace-pre-wrap leading-relaxed'>
 							{currentQuestion.prompt}
 						</p>
 					</div>
@@ -291,17 +386,17 @@ export default function ExamQuestionsArea({
 										}
 										className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
 											isSelected
-												? "border-blue-500 bg-blue-900/30 shadow-md"
-												: "border-slate-600 hover:border-blue-400 bg-slate-800"
+												? "border-primary bg-primary/10 shadow-md"
+												: "border-border hover:border-primary bg-secondary"
 										}`}
 									>
 										<div className='flex items-center gap-3'>
 											{isSelected ? (
-												<CheckCircle2 className='w-5 h-5 text-blue-400 shrink-0' />
+												<CheckCircle2 className='w-5 h-5 text-primary shrink-0' />
 											) : (
-												<Circle className='w-5 h-5 text-slate-500 shrink-0' />
+												<Circle className='w-5 h-5 text-muted-foreground shrink-0' />
 											)}
-											<span className='text-slate-200'>{option.text}</span>
+											<span className='text-foreground'>{option.text}</span>
 										</div>
 									</button>
 								);
@@ -309,78 +404,9 @@ export default function ExamQuestionsArea({
 						</div>
 					)}
 
-					{currentQuestion.type === "coding" && (
-						<div className='space-y-3'>
-							<div>
-								<Label className='text-sm font-semibold mb-2 block text-slate-300'>
-									Your Code
-								</Label>
-								<div className='border border-slate-600 rounded-lg overflow-hidden'>
-									<Editor
-										height='300px'
-										defaultLanguage='python'
-										theme={theme === "dark" ? "vs-dark" : "light"}
-										value={answers[currentQuestion.id]?.code || ""}
-										onChange={(value) =>
-											dispatch({
-												type: "SET_CODE",
-												questionId: currentQuestion.id,
-												code: value || "",
-											})
-										}
-										options={{
-											minimap: { enabled: false },
-											fontSize: 13,
-											lineNumbers: "on",
-											scrollBeyondLastLine: false,
-											automaticLayout: true,
-										}}
-									/>
-								</div>
-							</div>
-
-							{currentQuestion.testCases &&
-								currentQuestion.testCases.length > 0 && (
-									<div className='mt-3'>
-										<Label className='text-sm font-semibold mb-2 block text-slate-300'>
-											Test Cases (for reference)
-										</Label>
-										<div className='space-y-2'>
-											{currentQuestion.testCases.map((testCase, idx) => (
-												<div
-													key={testCase.id}
-													className='p-2 bg-slate-800 rounded-lg border border-slate-600'
-												>
-													<p className='text-xs font-medium text-slate-300 mb-1'>
-														Test Case {idx + 1}
-													</p>
-													<div className='grid grid-cols-2 gap-2 text-xs'>
-														<div>
-															<span className='text-slate-400'>Input:</span>
-															<code className='block mt-1 p-1.5 bg-slate-900 rounded border border-slate-700 font-mono text-slate-300'>
-																{testCase.input}
-															</code>
-														</div>
-														<div>
-															<span className='text-slate-400'>
-																Expected Output:
-															</span>
-															<code className='block mt-1 p-1.5 bg-slate-900 rounded border border-slate-700 font-mono text-slate-300'>
-																{testCase.expectedOutput}
-															</code>
-														</div>
-													</div>
-												</div>
-											))}
-										</div>
-									</div>
-								)}
-						</div>
-					)}
-
 					{currentQuestion.type === "short" && (
 						<div>
-							<Label className='text-sm font-semibold mb-2 block text-slate-300'>
+							<Label className='text-sm font-semibold mb-2 block text-foreground'>
 								Your Answer
 							</Label>
 							<textarea
@@ -392,16 +418,16 @@ export default function ExamQuestionsArea({
 										text: e.target.value,
 									})
 								}
-								className='w-full min-h-[150px] p-3 border-2 border-slate-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-800 text-slate-200 resize-y'
+								className='w-full min-h-[200px] p-3 border-2 border-border rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-background text-foreground resize-y'
 								placeholder='Type your answer here...'
 							/>
 						</div>
 					)}
 				</div>
-			</div>
+			)}
 
 			{/* Navigation */}
-			<div className='shrink-0 bg-slate-800 rounded-lg p-3 space-y-3'>
+			<div className='shrink-0 bg-card rounded-lg p-3 space-y-3'>
 				<div className='flex gap-2 flex-wrap justify-center'>
 					{examData.questions.map((_, idx) => (
 						<button
@@ -409,10 +435,10 @@ export default function ExamQuestionsArea({
 							onClick={() => setCurrentQuestionIndex(idx)}
 							className={`w-9 h-9 rounded-lg font-semibold text-sm transition-all ${
 								idx === currentQuestionIndex
-									? "bg-blue-600 text-white shadow-lg scale-110"
+									? "bg-primary text-primary-foreground shadow-lg scale-110"
 									: answers[examData.questions[idx].id]
 									? "bg-green-600 text-white border-2 border-green-500"
-									: "bg-slate-700 text-slate-300 hover:bg-slate-600"
+									: "bg-secondary text-secondary-foreground hover:bg-secondary/80"
 							}`}
 						>
 							{idx + 1}
@@ -428,7 +454,7 @@ export default function ExamQuestionsArea({
 						disabled={currentQuestionIndex === 0}
 						variant='outline'
 						size='sm'
-						className='bg-slate-700 border-slate-600 hover:bg-slate-600'
+						className='bg-secondary border-border hover:bg-secondary/80'
 					>
 						<ChevronLeft className='w-4 h-4 mr-1' />
 						Previous
@@ -452,7 +478,7 @@ export default function ExamQuestionsArea({
 						disabled={currentQuestionIndex === totalQuestions - 1}
 						variant='outline'
 						size='sm'
-						className='bg-slate-700 border-slate-600 hover:bg-slate-600'
+						className='bg-secondary border-border hover:bg-secondary/80'
 					>
 						Next
 						<ChevronRight className='w-4 h-4 ml-1' />

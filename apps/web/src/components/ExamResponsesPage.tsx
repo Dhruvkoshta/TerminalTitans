@@ -20,7 +20,20 @@ import {
 	FileText,
 	Code2,
 	Award,
+	Image,
+	Video,
+	Download,
 } from "lucide-react";
+import ExamResponsesViewer from "@/components/instructor/ExamResponsesViewer";
+
+interface VerificationArtifact {
+	id: number;
+	attemptId: number;
+	type: "face" | "room" | "id";
+	url: string;
+	meta?: any;
+	createdAt: string;
+}
 
 interface Response {
 	response: {
@@ -48,6 +61,7 @@ interface Attempt {
 	score: number | null;
 	proctoringSummary: Record<string, unknown> | null;
 	responses: Response[];
+	artifacts?: VerificationArtifact[];
 }
 
 interface Exam {
@@ -375,6 +389,104 @@ export default function ExamResponsesPage({ examId }: { examId: string }) {
 										</Card>
 									);
 								})}
+
+								{/* Verification Artifacts Section */}
+								{selectedAttempt.artifacts &&
+									selectedAttempt.artifacts.length > 0 && (
+										<Card className='shadow-lg border-2 border-primary'>
+											<CardHeader className='bg-linear-to-r from-primary to-primary/80 text-white rounded-t-lg'>
+												<CardTitle className='flex items-center gap-2'>
+													<Image className='w-5 h-5' />
+													Verification Artifacts
+												</CardTitle>
+												<CardDescription className='text-primary-foreground/80'>
+													Captured face photo, room scan, and ID documents
+												</CardDescription>
+											</CardHeader>
+											<CardContent className='pt-6'>
+												<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+													{selectedAttempt.artifacts.map((artifact) => (
+														<Card key={artifact.id} className='overflow-hidden'>
+															<div className='aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative group'>
+																{artifact.type === "face" && (
+																	<img
+																		src={artifact.url}
+																		alt='Face verification'
+																		className='w-full h-full object-cover'
+																	/>
+																)}
+																{artifact.type === "room" && (
+																	<video
+																		src={artifact.url}
+																		className='w-full h-full object-cover'
+																		controls
+																	/>
+																)}
+																{artifact.type === "id" && (
+																	<img
+																		src={artifact.url}
+																		alt='ID document'
+																		className='w-full h-full object-cover'
+																	/>
+																)}
+															</div>
+															<div className='p-3 border-t border-gray-200 dark:border-gray-700'>
+																<div className='flex items-center justify-between mb-2'>
+																	<div className='flex items-center gap-2'>
+																		{artifact.type === "face" && (
+																			<>
+																				<Image className='w-4 h-4' />
+																				<span className='text-sm font-medium'>
+																					Face Photo
+																				</span>
+																			</>
+																		)}
+																		{artifact.type === "room" && (
+																			<>
+																				<Video className='w-4 h-4' />
+																				<span className='text-sm font-medium'>
+																					Room Scan
+																				</span>
+																			</>
+																		)}
+																		{artifact.type === "id" && (
+																			<>
+																				<FileText className='w-4 h-4' />
+																				<span className='text-sm font-medium'>
+																					ID Document
+																				</span>
+																			</>
+																		)}
+																	</div>
+																</div>
+																<p className='text-xs text-muted-foreground mb-3'>
+																	{new Date(
+																		artifact.createdAt
+																	).toLocaleString()}
+																</p>
+																<Button
+																	variant='outline'
+																	size='sm'
+																	asChild
+																	className='w-full gap-1'
+																>
+																	<a
+																		href={artifact.url}
+																		target='_blank'
+																		rel='noopener noreferrer'
+																		download
+																	>
+																		<Download className='w-3 h-3' />
+																		Download
+																	</a>
+																</Button>
+															</div>
+														</Card>
+													))}
+												</div>
+											</CardContent>
+										</Card>
+									)}
 							</div>
 						)}
 					</div>

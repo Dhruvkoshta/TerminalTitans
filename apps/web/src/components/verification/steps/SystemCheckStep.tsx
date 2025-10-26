@@ -56,7 +56,8 @@ export default function SystemCheckStep({
 			switch (error.name) {
 				case "NotAllowedError":
 				case "PermissionDeniedError":
-					errMsg = "Permission denied. Please allow camera and microphone access.";
+					errMsg =
+						"Permission denied. Please allow camera and microphone access.";
 					break;
 				case "NotFoundError":
 					errMsg = "No camera or microphone found.";
@@ -124,7 +125,7 @@ export default function SystemCheckStep({
 			animationFrameRef.current = requestAnimationFrame(draw);
 			analyserRef.current.getByteFrequencyData(dataArray);
 
-			ctx.fillStyle = "rgb(30, 41, 59)";
+			ctx.fillStyle = "hsl(var(--background))";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 			const barWidth = (canvas.width / bufferLength) * 2.5;
@@ -133,7 +134,7 @@ export default function SystemCheckStep({
 
 			for (let i = 0; i < bufferLength; i++) {
 				barHeight = dataArray[i] / 2;
-				ctx.fillStyle = `rgb(${barHeight + 100}, 134, 244)`;
+				ctx.fillStyle = "hsl(var(--primary))";
 				ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
 				x += barWidth + 1;
 			}
@@ -188,7 +189,7 @@ export default function SystemCheckStep({
 							</div>
 							<StatusIndicator status={cameraStatus} />
 						</div>
-						<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative'>
+						<div className='aspect-video bg-secondary/20 dark:bg-secondary/10 rounded-lg overflow-hidden relative border border-secondary/30'>
 							{isChecking && (
 								<div className='absolute inset-0 flex items-center justify-center z-10'>
 									<Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
@@ -215,7 +216,7 @@ export default function SystemCheckStep({
 							</div>
 							<StatusIndicator status={micStatus} />
 						</div>
-						<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center p-4'>
+						<div className='aspect-video bg-secondary/20 dark:bg-secondary/10 rounded-lg overflow-hidden flex items-center justify-center p-4 border border-secondary/30'>
 							{isChecking ? (
 								<Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
 							) : micStatus === "success" ? (
@@ -236,12 +237,12 @@ export default function SystemCheckStep({
 				</div>
 
 				{errorMessage && (
-					<div className='bg-red-950/30 border border-red-900 rounded-lg p-4'>
+					<div className='bg-destructive/10 border border-destructive rounded-lg p-4'>
 						<div className='flex items-start gap-3'>
-							<AlertCircle className='h-5 w-5 text-red-500 shrink-0 mt-0.5' />
+							<AlertCircle className='h-5 w-5 text-destructive shrink-0 mt-0.5' />
 							<div className='flex-1'>
-								<p className='font-semibold text-red-500 mb-1'>Error</p>
-								<p className='text-sm text-red-300'>{errorMessage}</p>
+								<p className='font-semibold text-destructive mb-1'>Error</p>
+								<p className='text-sm text-destructive/80'>{errorMessage}</p>
 							</div>
 						</div>
 					</div>
@@ -268,7 +269,7 @@ function StatusIndicator({
 	const variants = {
 		pending: "text-yellow-500",
 		success: "text-green-500",
-		error: "text-red-500",
+		error: "text-destructive",
 	};
 
 	const labels = {

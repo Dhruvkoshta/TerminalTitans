@@ -150,7 +150,7 @@ export default function VerificationWizard({
 	// Show loading state while checking or navigating
 	if (isNavigating) {
 		return (
-			<div className='min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4'>
+			<div className='min-h-screen bg-background text-foreground flex items-center justify-center p-4'>
 				<div className='text-center space-y-4'>
 					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto' />
 					<p className='text-muted-foreground'>Redirecting to exam...</p>
@@ -160,7 +160,7 @@ export default function VerificationWizard({
 	}
 
 	return (
-		<div className='min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4'>
+		<div className='min-h-screen bg-background text-foreground flex items-center justify-center p-4'>
 			<div className='w-full max-w-4xl space-y-8'>
 				{/* Progress bar */}
 				<div className='space-y-4'>
@@ -188,7 +188,7 @@ export default function VerificationWizard({
 											? "border-primary bg-primary/10"
 											: index + 1 < step
 											? "border-primary/60 bg-primary/60"
-											: "border-muted-foreground"
+											: "border-border"
 									}`}
 								>
 									{index + 1}
@@ -196,7 +196,7 @@ export default function VerificationWizard({
 							</div>
 						))}
 					</div>
-					<div className='relative h-2 bg-slate-800 rounded-full overflow-hidden'>
+					<div className='relative h-2 bg-card rounded-full overflow-hidden'>
 						<div
 							className='absolute inset-y-0 left-0 bg-primary transition-all duration-300'
 							style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}

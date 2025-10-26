@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, eq } from "@my-better-t-app/db";
-import { attempts, responses, examQuestions, exams } from "@my-better-t-app/db/schema/auth";
+import { attempts, responses, examQuestions, exams, verificationArtifacts } from "@my-better-t-app/db/schema/auth";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 			.from(examQuestions)
 			.where(eq(examQuestions.examId, Number(examId)));
 
-		// For each attempt, get all responses
+		// For each attempt, get all responses and artifacts
 		const attemptsWithResponses = await Promise.all(
 			examAttempts.map(async (attempt) => {
 				const studentResponses = await db
@@ -49,9 +49,16 @@ export async function GET(request: NextRequest) {
 					.leftJoin(examQuestions, eq(responses.questionId, examQuestions.id))
 					.where(eq(responses.attemptId, attempt.id));
 
+				// Fetch verification artifacts for this attempt
+				const artifacts = await db
+					.select()
+					.from(verificationArtifacts)
+					.where(eq(verificationArtifacts.attemptId, attempt.id));
+
 				return {
 					...attempt,
 					responses: studentResponses,
+					artifacts,
 				};
 			})
 		);

@@ -1,295 +1,788 @@
+"use client";
 
-			"use client";
-			import React from "react";
-			import { Button } from "@/components/ui/button";
-			import { Card, CardContent } from "@/components/ui/card";
-			import TrustedBy from "@/components/trusted-by";
+import Image from "next/image";
+import Link from "next/link";
+import {
+	motion,
+	useMotionTemplate,
+	useScroll,
+	useTransform,
+} from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Menu, X, Facebook, Twitter, Instagram } from "lucide-react";
 
-			export default function Home() {
-				const services = [
+export default function Home() {
+	return (
+		<main className='flex min-h-screen flex-col bg-background text-foreground'>
+			<Hero />
+			<Brands />
+			<Benefits />
+			<Features />
+			<Plugins />
+			<Insights />
+			<Testimonials />
+			<Faq />
+			<Newsletter />
+			<Footer />
+		</main>
+	);
+}
 
-					{
-						title: "Student Dashboard",
-						desc: "A personalized student hub with upcoming exams and progress.\\nClear widgets for quick access and reminders.",
-						img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Student Result Page",
-						desc: "Detailed score breakdown and feedback per section.\\nDownloadable certificates and share options.",
-						img: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Exam Interface",
-						desc: "Fast, distraction-free exam UI with rich question types.\\nAuto-save and reconnection support during sessions.",
-						img: "https://images.unsplash.com/photo-1555949963-aa79dcee981d?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Admin Dashboard",
-						desc: "High-level controls for exams, users, and reports.\\nQuick actions for bulk operations and oversight.",
-						img: "https://images.unsplash.com/photo-1554168193-95d4e6a3d9d6?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Exam Configuration",
-						desc: "Flexible exam settings: timings, grading, and policies.\\nPreview mode to verify configuration before launch.",
-						img: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Report Analytics",
-						desc: "Interactive analytics with filters and export options.\\nIdentify trends and focus areas at a glance.",
-						img: "https://images.unsplash.com/photo-1517142089942-ba376ce32a2e?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Admin Support & Help",
-						desc: "In-app support center and guided walkthroughs.\\nFast ticketing and priority response options.",
-						img: "https://images.unsplash.com/photo-1559526324-593bc073d938?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Proctoring Review",
-						desc: "Playback with annotated flags and timestamps.\\nTeam review queues and verdict controls.",
-						img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Platform Settings",
-						desc: "Global configuration for branding and security.\\nRole-based access and audit logs for compliance.",
-						img: "https://images.unsplash.com/photo-1508830524289-0adcbe822b40?q=80&w=1600&auto=format&fit=crop",
-					},
-					{
-						title: "Live Proctor Monitoring",
-						desc: "Real-time proctor dashboards for active exams.\\nAlerts, multi-feed views, and action tools.",
-						img: "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=1600&auto=format&fit=crop",
-					},
-				];
+function Reveal({
+	children,
+	delay = 0,
+}: {
+	children: ReactNode;
+	delay?: number;
+}) {
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 40 }}
+			whileInView={{ opacity: 1, y: 0 }}
+			viewport={{ once: true, amount: 0.2 }}
+			transition={{ duration: 0.6, ease: "easeOut", delay }}
+		>
+			{children}
+		</motion.div>
+	);
+}
 
-				return (
-					<main className="min-h-screen flex flex-col items-center justify-start bg-slate-900 text-slate-100">
-						<div className="w-full max-w-6xl px-6 py-20">
-							<section className="relative mb-16 grid gap-8 lg:grid-cols-2 lg:items-center">
-								<div className="z-10">
-									<h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight">Make Every Exam Secure</h1>
-									<p className="mt-4 max-w-xl text-lg text-purple-200/90">AI-powered proctoring that keeps exams fair, private, and simple to manage.</p>
+function Hero() {
+	const ref = useRef<HTMLDivElement | null>(null);
+	const { scrollYProgress } = useScroll({
+		target: ref,
+		offset: ["start end", "end start"],
+	});
+	const rotateX = useTransform(scrollYProgress, [0, 0.6], [70, 0]);
+	const scale = useTransform(scrollYProgress, [0, 0.6], [0.8, 1]);
+	const translateY = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
+	const shadowAlpha = useTransform(scrollYProgress, [0.5, 0.8], [0, 0.66]);
+	const boxShadow = useMotionTemplate`0px 15px 25px -5px rgba(126, 34, 206, ${shadowAlpha})`;
+	const transform = useMotionTemplate`perspective(1200px) translateY(${translateY}px) scale(${scale}) rotateX(${rotateX}deg)`;
 
-									<div className="mt-8 flex items-center gap-4">
-										<a
-											href="#"
-											className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-transform"
-										>
-											Get started
-										</a>
-										<a
-											href="#"
-											className="inline-flex items-center gap-2 rounded-full bg-slate-800/50 px-5 py-3 text-sm font-medium text-white ring-1 ring-white/10 hover:bg-slate-800/70 transition-colors"
-										>
-											Talk to a human
-										</a>
-									</div>
-								</div>
+	return (
+		<section
+			ref={ref}
+			className='relative flex min-h-screen w-full max-w-[100vw] flex-col overflow-hidden '
+			id='hero-section'
+		>
+			<div className='flex h-full min-h-screen w-full flex-col items-center justify-center gap-10 p-[5%] lg:gap-14'>
+				<div className='flex flex-col items-center text-center'>
+					<Reveal>
+						<h1 className='bg-linear-to-r from-foreground via-primary to-accent bg-clip-text text-6xl font-semibold uppercase tracking-tight text-transparent max-lg:text-4xl'>
+							The Future of
+							<br />
+							Exam Integrity
+						</h1>
+					</Reveal>
+					<Reveal delay={0.1}>
+						<p className='mt-6 max-w-xl text-balance text-base text-muted-foreground'>
+							Revolutionize online exams with AI-powered proctoring that ensures
+							fairness, security, and integrity for educational institutions
+							worldwide.
+						</p>
+					</Reveal>
+					<div className='mt-10 flex flex-wrap items-center justify-center gap-4'>
+						<Reveal>
+							<Link
+								className='inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-transform duration-300 hover:scale-[1.03] hover:bg-secondary'
+								href='/#'
+							>
+								Get started
+							</Link>
+						</Reveal>
+						<Reveal delay={0.05}>
+							<Link
+								className='inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors duration-300 hover:bg-foreground hover:text-background'
+								href='/#'
+							>
+								Learn more
+							</Link>
+						</Reveal>
+					</div>
+				</div>
 
-								<div className="relative z-0 mt-6 flex h-72 items-center justify-center lg:mt-0">
-									{/* faded purple background */}
-									<div className="absolute inset-0 rounded-3xl bg-purple-900/40 backdrop-blur-sm" />
-									{/* uploaded AI image (place the file at public/images/ai-face.svg) */}
-									<img src="/images/ai-face.svg" alt="AI face" className="relative h-72 w-72 rounded-3xl object-cover shadow-2xl ring-1 ring-white/6" />
-								</div>
-							</section>
+				<div className='relative flex w-full justify-center'>
+					<motion.div
+						style={{ transform, boxShadow }}
+						className='relative max-w-[80%] overflow-hidden rounded-2xl border border-border bg-card backdrop-blur max-md:max-w-full'
+					>
+						<Image
+							src='/assets/images/home/dashboard.png'
+							alt='dashboard'
+							width={1400}
+							height={800}
+							className='h-full w-full object-cover opacity-90'
+							priority
+						/>
+					</motion.div>
+					<div className='pointer-events-none absolute left-[20%] top-5 h-[200px] w-[200px] rounded-full bg-fuchsia-500/30 blur-[120px]' />
+					<div className='pointer-events-none absolute right-[15%] bottom-0 h-40 w-40 rounded-full bg-cyan-400/20 blur-[100px]' />
+				</div>
+			</div>
+		</section>
+	);
+}
 
-							<TrustedBy />
+function Brands() {
+	const logos = ["google", "microsoft", "adobe", "airbnb", "stripe", "reddit"];
 
-							{/* Primary Features (Student Dashboard, Live Proctor Monitoring, etc.) */}
-							<div className="mt-8 space-y-6">
-								{services.map((s, idx) => (
-									<Card key={s.title} className={`overflow-hidden sm:flex-row ${idx % 2 === 1 ? "sm:flex-row-reverse" : "sm:flex-row"}`}>
-										<div className="sm:w-1/2 w-full overflow-hidden rounded-lg">
-											<img src={s.img} alt={s.title} className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105" />
-										</div>
-										<CardContent className="sm:w-1/2 w-full">
-											<h3 className="text-2xl font-semibold text-white">{s.title}</h3>
-											{s.desc.split("\\n").map((line, i) => (
-												<p key={i} className="mt-2 text-sm text-purple-100/90">{line}</p>
-											))}
-											<div className="mt-4">
-												<Button variant="ghost" size="sm">Learn more</Button>
-											</div>
-										</CardContent>
-									</Card>
-								))}
+	return (
+		<section className='flex w-full flex-col items-center overflow-hidden px-[5%] py-12'>
+			<h2 className='text-3xl font-semibold text-foreground/90 max-md:text-xl'>
+				Trusted by brands you know
+			</h2>
+			<div className='mt-8 w-full max-w-4xl'>
+				<motion.div
+					className='flex w-full gap-8'
+					animate={{ x: [0, -300] }}
+					transition={{
+						repeat: Infinity,
+						repeatType: "loop",
+						ease: "linear",
+						duration: 15,
+					}}
+				>
+					{[...logos, ...logos].map((logo, index) => (
+						<div
+							key={`${logo}-${index}`}
+							className='h-[30px] w-[150px] shrink-0'
+						>
+							<Image
+								src={`/assets/images/brand-logos/${logo}.svg`}
+								alt={logo}
+								width={150}
+								height={30}
+								className='h-full w-full object-contain grayscale transition duration-300 hover:grayscale-0'
+							/>
+						</div>
+					))}
+				</motion.div>
+			</div>
+		</section>
+	);
+}
+
+function Benefits() {
+	const items = [
+		{
+			icon: "🛡️",
+			title: "Prevent cheating effectively",
+			text: "Advanced AI detection stops unauthorized behavior during exams.",
+		},
+		{
+			icon: "📹",
+			title: "Real-time monitoring",
+			text: "Continuous surveillance ensures exam integrity from start to finish.",
+		},
+		{
+			icon: "⚡",
+			title: "Instant alerts",
+			text: "Get notified immediately of any suspicious activities.",
+		},
+	];
+
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-16'>
+			<Reveal>
+				<div className='text-center'>
+					<p className='text-sm uppercase tracking-[0.4em] text-muted-foreground/50'>
+						Benefits
+					</p>
+					<h2 className='mt-3 text-4xl font-semibold text-foreground max-md:text-3xl'>
+						Why choose ProctoAI?
+					</h2>
+				</div>
+			</Reveal>
+			<div className='mt-12 grid w-full max-w-5xl grid-cols-1 gap-10 md:grid-cols-3'>
+				{items.map((item, index) => (
+					<Reveal key={item.title} delay={index * 0.05}>
+						<div className='flex h-full flex-col gap-6 rounded-2xl border border-border bg-card p-6 text-center'>
+							<div className='flex h-48 items-center justify-center rounded-xl border border-border bg-secondary text-6xl max-md:text-5xl'>
+								<span aria-hidden>{item.icon}</span>
 							</div>
+							<h3 className='text-2xl font-medium text-foreground'>
+								{item.title}
+							</h3>
+							<p className='text-sm text-muted-foreground'>{item.text}</p>
+						</div>
+					</Reveal>
+				))}
+			</div>
+		</section>
+	);
+}
 
-							{/* How It Works - 3 steps */}
-							<section className="mt-12 rounded-2xl bg-slate-800/30 p-6 backdrop-blur-md">
-								<div className="mx-auto max-w-4xl text-center">
-									<h2 className="text-2xl font-bold text-white">Get started in 3 simple steps</h2>
-									<p className="mt-2 text-sm text-purple-100/80">Set up exams, monitor live sessions, and review results with ease.</p>
-								</div>
+function Features() {
+	const items = [
+		{
+			icon: "🤖",
+			title: "AI-Powered Detection",
+			text: "Machine learning algorithms identify cheating patterns in real-time.",
+		},
+		{
+			icon: "📊",
+			title: "Comprehensive Analytics",
+			text: "Detailed reports on exam sessions and student behavior.",
+		},
+		{
+			icon: "☁️",
+			title: "Cloud-Based Security",
+			text: "Secure, scalable infrastructure for online proctoring.",
+		},
+		{
+			icon: "🔒",
+			title: "Multi-Factor Authentication",
+			text: "Enhanced security with biometric and device verification.",
+		},
+		{
+			icon: "🎚️",
+			title: "Seamless Integrations",
+			text: "Works with popular LMS platforms like Canvas and Moodle.",
+		},
+		{
+			icon: "⚙️",
+			title: "Customizable Settings",
+			text: "Tailor proctoring rules to your institution's needs.",
+		},
+	];
 
-								<div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-									<div className="flex-1 rounded-lg bg-slate-900/50 p-6">
-										<div className="text-3xl font-extrabold text-purple-300">01</div>
-										<h3 className="mt-3 text-lg font-semibold text-white">Create Your Exam</h3>
-										<p className="mt-2 text-sm text-purple-100/80">Set up your test, add questions, and configure security settings in minutes.</p>
-									</div>
-
-									<div className="flex-1 rounded-lg bg-slate-900/50 p-6">
-										<div className="text-3xl font-extrabold text-purple-300">02</div>
-										<h3 className="mt-3 text-lg font-semibold text-white">Invite Students</h3>
-										<p className="mt-2 text-sm text-purple-100/80">Share secure links and pre-check system requirements to ensure smooth delivery.</p>
-									</div>
-
-									<div className="flex-1 rounded-lg bg-slate-900/50 p-6">
-										<div className="text-3xl font-extrabold text-purple-300">03</div>
-										<h3 className="mt-3 text-lg font-semibold text-white">Review & Report</h3>
-										<p className="mt-2 text-sm text-purple-100/80">Analyze flagged events, export reports, and take action where needed.</p>
-									</div>
-								</div>
-							</section>
-
-							{/* More Features grid */}
-							<section className="mt-10">
-								<div className="mx-auto max-w-4xl text-center">
-									<h2 className="text-2xl font-bold text-white">Everything you need for secure exams</h2>
-									<p className="mt-2 text-sm text-purple-100/80">Robust features designed for integrity, scalability, and ease-of-use.</p>
-								</div>
-
-								<div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-									{[
-										{
-											title: "AI-Powered Alerts",
-											desc: "Smart detection flags suspicious behaviour in real-time.",
-										},
-										{
-											title: "ID Verification",
-											desc: "Secure identity checks before exam start.",
-										},
-										{
-											title: "Secure Browser Lockdown",
-											desc: "Prevent tab switching and external resource access.",
-										},
-										{
-											title: "Multi-Camera Support",
-											desc: "Monitor multiple feeds for enhanced coverage.",
-										},
-										{
-											title: "Detailed Analytics",
-											desc: "Exportable reports with actionable insights.",
-										},
-										{
-											title: "Role-Based Access",
-											desc: "Granular permissions for admins and reviewers.",
-										},
-									].map((f) => (
-										<div key={f.title} className="rounded-xl bg-slate-800/30 p-6 hover:scale-[1.02] transition-transform">
-											<div className="flex items-center gap-4">
-												{/* placeholder icon */}
-												<svg className="h-8 w-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m4-2h.01M12 6v.01"></path></svg>
-												<div>
-													<h4 className="text-lg font-semibold text-white">{f.title}</h4>
-													<p className="mt-1 text-sm text-purple-100/80">{f.desc}</p>
-												</div>
-											</div>
-										</div>
-									))}
-								</div>
-							</section>
-
-							{/* FAQ accordion */}
-							<section className="mt-12 mx-auto max-w-4xl">
-								<h2 className="text-center text-2xl font-bold text-white">Frequently Asked Questions</h2>
-								<div className="mt-6 space-y-3">
-									{[
-										{
-											q: "How does the AI detect cheating?",
-											a: "We use a combination of face detection, gaze estimation, audio signals, and behavioral patterns to flag suspicious events for human review.",
-										},
-										{
-											q: "Is my data secure and private?",
-											a: "All data is encrypted in transit and at rest; access is role-based and audit-logged to ensure compliance.",
-										},
-										{
-											q: "What are the technical requirements for students?",
-											a: "Students need a modern browser, webcam, microphone, and a stable internet connection. Mobile support varies by configuration.",
-										},
-										{
-											q: "Can I review flagged sessions manually?",
-											a: "Yes — reviewers can play back sessions with annotated flags and timestamps to make final decisions.",
-										},
-										{
-											q: "How accurate are the AI alerts?",
-											a: "The AI aims to minimize false positives; all alerts should be reviewed by a human before any action is taken.",
-										},
-									].map((item) => (
-										<details key={item.q} className="rounded-lg bg-slate-800/30 p-4">
-											<summary className="cursor-pointer text-white font-medium">{item.q}</summary>
-											<p className="mt-2 text-sm text-purple-100/80">{item.a}</p>
-										</details>
-									))}
-								</div>
-							</section>
-
-							{/* CTA */}
-							<section className="mt-12 text-center">
-								<h2 className="text-3xl font-extrabold text-white">Make Every Exam Secure Today</h2>
-								<p className="mt-3 text-sm text-purple-100/80">Get started with PROCTO and ensure fairness and integrity for all your assessments.</p>
-								<div className="mt-6 flex items-center justify-center gap-4">
-									<Button className="bg-linear-to-r from-indigo-500 to-pink-500 text-white" asChild>
-										<a href="#">Get Started</a>
-									</Button>
-									<Button variant="outline" asChild>
-										<a href="#">Talk to a Human</a>
-									</Button>
-								</div>
-							</section>
-
-
-				{/* Footer */}
-				<footer className="mt-12 w-full border-t border-slate-700/40 pt-10">
-					<div className="mx-auto max-w-6xl px-6 text-slate-300">
-						<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
-							<div>
-								<h4 className="mb-3 text-lg font-semibold text-white">Product</h4>
-								<ul className="space-y-2 text-sm">
-									<li><a className="hover:text-white" href="#">Student Dashboard</a></li>
-									<li><a className="hover:text-white" href="#">Live Proctor Monitoring</a></li>
-									<li><a className="hover:text-white" href="#">Exam Interface</a></li>
-									<li><a className="hover:text-white" href="#">Analytics</a></li>
-								</ul>
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<Reveal>
+				<h2 className='text-center text-4xl font-semibold text-foreground max-md:text-3xl'>
+					Advanced Proctoring Features
+				</h2>
+			</Reveal>
+			<div className='mt-12 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2'>
+				{items.map((item, index) => (
+					<Reveal key={item.title} delay={index * 0.05}>
+						<div className='flex gap-6 rounded-2xl border border-border bg-card p-6'>
+							<div className='text-4xl' aria-hidden>
+								{item.icon}
 							</div>
-							<div>
-								<h4 className="mb-3 text-lg font-semibold text-white">Resources</h4>
-								<ul className="space-y-2 text-sm">
-									<li><a className="hover:text-white" href="#">Docs</a></li>
-									<li><a className="hover:text-white" href="#">API</a></li>
-									<li><a className="hover:text-white" href="#">Support</a></li>
-								</ul>
-							</div>
-							<div>
-								<h4 className="mb-3 text-lg font-semibold text-white">Company</h4>
-								<ul className="space-y-2 text-sm">
-									<li><a className="hover:text-white" href="#">About</a></li>
-									<li><a className="hover:text-white" href="#">Careers</a></li>
-									<li><a className="hover:text-white" href="#">Contact</a></li>
-								</ul>
-							</div>
-							<div>
-								<h4 className="mb-3 text-lg font-semibold text-white">Legal</h4>
-								<ul className="space-y-2 text-sm">
-									<li><a className="hover:text-white" href="#">Terms</a></li>
-									<li><a className="hover:text-white" href="#">Privacy</a></li>
-									<li><a className="hover:text-white" href="#">Security</a></li>
-								</ul>
+							<div className='flex flex-col gap-3'>
+								<h3 className='text-2xl font-medium text-foreground'>
+									{item.title}
+								</h3>
+								<p className='text-sm text-muted-foreground'>{item.text}</p>
 							</div>
 						</div>
+					</Reveal>
+				))}
+			</div>
+		</section>
+	);
+}
 
-						<div className="mt-8 flex items-center justify-between border-t border-slate-700/30 pt-6">
-							<div className="text-sm text-slate-400">© {new Date().getFullYear()} PROCTO • All rights reserved.</div>
-							<div className="flex items-center gap-4 text-sm">
-							<div className="flex items-center gap-2">
-								<div className="h-2 w-2 rounded-full bg-green-500" />
-								<span className="text-sm text-slate-400">All systems nominal</span>
+function Plugins() {
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<div className='flex w-full flex-col items-center gap-10 lg:flex-row'>
+				<Reveal>
+					<div className='max-h-[650px] max-w-[850px] overflow-hidden rounded-2xl border border-primary/30 shadow-[0_0_60px_-15px_rgba(15,164,175,0.44)]'>
+						<Image
+							src='/assets/images/home/dash.png'
+							alt='Plugin preview'
+							width={1200}
+							height={700}
+							className='h-full w-full object-cover'
+						/>
+					</div>
+				</Reveal>
+				<div className='max-w-lg space-y-6 text-left'>
+					<Reveal>
+						<h3 className='text-4xl font-semibold text-foreground max-md:text-3xl'>
+							AI-Powered Proctoring Tools
+						</h3>
+					</Reveal>
+					<Reveal>
+						<div className='space-y-3 text-muted-foreground'>
+							<h4 className='text-xl font-medium text-foreground'>
+								Face Recognition
+							</h4>
+							<p>
+								Verify student identity with advanced facial recognition
+								technology.
+							</p>
+						</div>
+					</Reveal>
+					<Reveal>
+						<div className='space-y-3 text-muted-foreground'>
+							<h4 className='text-xl font-medium text-foreground'>
+								Behavior Analysis
+							</h4>
+							<p>
+								Monitor eye movement, head position, and suspicious activities.
+							</p>
+						</div>
+					</Reveal>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function Insights() {
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<div className='flex w-full flex-col items-center gap-10 lg:flex-row-reverse'>
+				<Reveal>
+					<div className='max-h-[650px] max-w-[850px] overflow-hidden rounded-2xl border border-primary/30 shadow-[0_0_60px_-15px_rgba(15,164,175,0.44)]'>
+						<Image
+							src='/assets/images/home/insights.png'
+							alt='Insights'
+							width={1200}
+							height={700}
+							className='h-full w-full object-cover'
+						/>
+					</div>
+				</Reveal>
+				<div className='max-w-lg space-y-6 text-left'>
+					<Reveal>
+						<h3 className='text-4xl font-semibold text-foreground max-md:text-3xl'>
+							Comprehensive Exam Analytics
+						</h3>
+					</Reveal>
+					<Reveal>
+						<div className='space-y-3 text-muted-foreground'>
+							<h4 className='text-xl font-medium text-foreground'>
+								Detailed Reports
+							</h4>
+							<p>
+								Get in-depth analysis of each exam session with timestamps and
+								flags.
+							</p>
+						</div>
+					</Reveal>
+					<Reveal>
+						<div className='space-y-3 text-muted-foreground'>
+							<h4 className='text-xl font-medium text-foreground'>
+								Unified Dashboard
+							</h4>
+							<p>Monitor all exams from a single, intuitive interface.</p>
+						</div>
+					</Reveal>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function Testimonials() {
+	const cards = [
+		{
+			img: "/assets/images/people/women.jpg",
+			name: "Trich B",
+			title: "AMI, CEO",
+			text: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Beatae, vero.",
+		},
+		{
+			img: "/assets/images/people/man.jpg",
+			name: "John B",
+			title: "ABC, CTO",
+			text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore deserunt delectus consectetur enim.",
+		},
+		{
+			img: "/assets/images/people/man2.jpg",
+			name: "Mante",
+			title: "XYZ, CTO",
+			text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quidem, numquam.",
+		},
+		{
+			img: "/assets/images/people/women.jpg",
+			name: "Lara",
+			title: "XZ, CTO",
+			text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta saepe illum.",
+		},
+		{
+			img: "/assets/images/people/man.jpg",
+			name: "James",
+			title: "App, CTO",
+			text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga accusamus non enim debitis.",
+		},
+		{
+			img: "/assets/images/people/man2.jpg",
+			name: "Ron",
+			title: "Marketplace, CTO",
+			text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga accusamus non enim debitis.",
+		},
+	];
+
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<Reveal>
+				<h3 className='text-4xl font-semibold text-foreground max-md:text-3xl'>
+					Trusted by Educational Institutions
+				</h3>
+			</Reveal>
+			<div className='mt-12 columns-1 gap-8 space-y-8 md:columns-2 xl:columns-3'>
+				{cards.map((card, index) => (
+					<Reveal key={card.name} delay={index * 0.03}>
+						<div className='flex h-full w-[340px] break-inside-avoid flex-col gap-4 rounded-2xl border border-border bg-card p-6 max-lg:w-[320px]'>
+							<p className='text-sm text-muted-foreground'>{card.text}</p>
+							<div className='flex items-center gap-3'>
+								<div className='h-12 w-12 overflow-hidden rounded-full'>
+									<Image
+										src={card.img}
+										alt={card.name}
+										width={48}
+										height={48}
+										className='h-full w-full object-cover'
+									/>
+								</div>
+								<div className='flex flex-col'>
+									<span className='font-semibold text-foreground'>
+										{card.name}
+									</span>
+									<span className='text-xs text-muted-foreground/60'>
+										{card.title}
+									</span>
+								</div>
 							</div>
+						</div>
+					</Reveal>
+				))}
+			</div>
+		</section>
+	);
+}
+
+function Pricing() {
+	const tiers = [
+		{
+			price: 9,
+			featured: false,
+			desc: "Perfect for small institutions starting with online proctoring.",
+			features: [
+				"Up to 100 students",
+				"Basic AI monitoring",
+				"Email support",
+				"Standard reports",
+			],
+		},
+		{
+			price: 19,
+			featured: true,
+			desc: "Ideal for growing universities with advanced needs.",
+			features: [
+				"Up to 1000 students",
+				"Advanced AI detection",
+				"Priority support",
+				"Detailed analytics",
+			],
+		},
+		{
+			price: 49,
+			featured: false,
+			desc: "For large institutions requiring enterprise solutions.",
+			features: [
+				"Unlimited students",
+				"Full AI suite",
+				"Dedicated support",
+				"Custom integrations",
+			],
+		},
+	];
+
+	return (
+		<section
+			className='flex w-full flex-col items-center px-[5%] py-20'
+			id='pricing'
+		>
+			<Reveal>
+				<h3 className='text-3xl font-semibold text-foreground/90 max-md:text-2xl'>
+					Simple pricing
+				</h3>
+			</Reveal>
+			<div className='mt-12 flex w-full flex-wrap justify-center gap-8'>
+				{tiers.map((tier, index) => (
+					<Reveal key={tier.price} delay={index * 0.05}>
+						<div
+							className={`flex w-[360px] flex-col items-center gap-4 rounded-2xl border bg-card p-8 text-center shadow-xl transition-transform duration-300 hover:scale-[1.02] max-lg:w-[320px] ${
+								tier.featured ? "border-primary/60" : "border-border"
+							}`}
+						>
+							<h3 className='text-5xl font-semibold text-foreground'>
+								${tier.price}
+								<span className='ml-1 text-2xl text-muted-foreground/60'>
+									/mo
+								</span>
+							</h3>
+							<p className='text-sm text-muted-foreground'>{tier.desc}</p>
+							<hr className='w-full border-border' />
+							<ul className='flex w-full flex-col gap-2 text-sm text-muted-foreground'>
+								{tier.features.map((feature, i) => (
+									<li key={i}>{feature}</li>
+								))}
+							</ul>
+							<Link
+								href='/#'
+								className='mt-6 inline-flex w-full items-center justify-center rounded-full bg-secondary px-5 py-3 text-sm font-semibold text-foreground transition-transform duration-300 hover:translate-y-1'
+							>
+								Get now
+							</Link>
+						</div>
+					</Reveal>
+				))}
+			</div>
+		</section>
+	);
+}
+
+function Faq() {
+	const items = [
+		{
+			q: "How does ProctoAI ensure exam integrity?",
+			a: "Our AI-powered system uses facial recognition, behavior analysis, and real-time monitoring to detect and prevent cheating.",
+		},
+		{
+			q: "Is ProctoAI compatible with our LMS?",
+			a: "Yes, we integrate seamlessly with popular platforms like Canvas, Moodle, and Blackboard.",
+		},
+		{
+			q: "What happens if suspicious activity is detected?",
+			a: "Instructors receive instant alerts and can review flagged incidents with detailed timestamps and evidence.",
+		},
+		{
+			q: "How secure is student data?",
+			a: "We use enterprise-grade encryption and comply with GDPR and FERPA privacy standards.",
+		},
+	];
+
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<Reveal>
+				<h3 className='text-4xl font-semibold text-foreground max-md:text-3xl'>
+					FAQ
+				</h3>
+			</Reveal>
+			<div className='mt-10 flex w-full max-w-3xl flex-col gap-4'>
+				{items.map((item, index) => (
+					<Reveal key={item.q} delay={index * 0.04}>
+						<details className='rounded-2xl border border-border bg-card transition-colors open:bg-secondary'>
+							<summary className='cursor-pointer select-none list-none rounded-2xl px-6 py-4 text-lg font-medium text-foreground'>
+								{item.q}
+							</summary>
+							<div className='px-6 pb-6 text-sm text-muted-foreground'>
+								{item.a}
 							</div>
+						</details>
+					</Reveal>
+				))}
+			</div>
+			<Reveal>
+				<div className='mt-16 flex flex-col items-center gap-4'>
+					<p className='text-2xl text-foreground'>Still have questions?</p>
+					<Link
+						href='/#'
+						className='inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-primary hover:text-background'
+					>
+						Contact
+					</Link>
+				</div>
+			</Reveal>
+		</section>
+	);
+}
+
+function Newsletter() {
+	return (
+		<section className='flex w-full flex-col items-center px-[5%] py-20'>
+			<div className='flex w-full max-w-4xl flex-col items-center justify-between gap-6 rounded-2xl border border-border bg-card p-8 lg:flex-row'>
+				<Reveal>
+					<div className='max-w-md space-y-2 text-center lg:text-left'>
+						<h2 className='text-3xl font-semibold text-foreground max-md:text-2xl'>
+							Join our newsletter
+						</h2>
+						<p className='text-sm text-muted-foreground'>
+							Get the latest updates on AI proctoring technology and exam
+							integrity solutions.
+						</p>
+					</div>
+				</Reveal>
+				<Reveal>
+					<form className='flex h-14 w-full max-w-md items-center gap-2 rounded-full border border-border bg-background px-2 py-1'>
+						<input
+							type='email'
+							className='h-full flex-1 rounded-full bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none'
+							placeholder='email'
+							aria-label='Email address'
+						/>
+						<button
+							type='submit'
+							className='inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-background transition-transform duration-300 hover:translate-x-1'
+						>
+							Signup
+						</button>
+					</form>
+				</Reveal>
+			</div>
+		</section>
+	);
+}
+
+function Footer() {
+	return (
+		<footer className='mt-auto w-full px-[5%] pb-10'>
+			<div className='flex flex-col justify-between gap-10 rounded-2xl border-t border-border pt-12 lg:flex-row'>
+				<div className='flex w-full max-w-xs flex-col items-start gap-5 text-muted-foreground'>
+					<Image
+						src='/assets/logo/logo.png'
+						alt='logo'
+						width={120}
+						height={120}
+						className='max-w-[120px]'
+					/>
+					<p>
+						2 Lord Edward St,
+						<br />
+						D02 P634,
+						<br />
+						United States
+					</p>
+					<div>
+						<div className='text-lg font-semibold text-foreground'>
+							Follow us
+						</div>
+						<div className='mt-3 flex gap-4 text-muted-foreground'>
+							<Link
+								href='/#'
+								aria-label='Facebook'
+								className='transition-colors hover:text-foreground'
+							>
+								<Facebook className='h-5 w-5' />
+							</Link>
+							<Link
+								href='https://twitter.com/@pauls_freeman'
+								aria-label='Twitter'
+								className='transition-colors hover:text-foreground'
+							>
+								<Twitter className='h-5 w-5' />
+							</Link>
+							<Link
+								href='https://instagram.com/'
+								aria-label='Instagram'
+								className='transition-colors hover:text-foreground'
+							>
+								<Instagram className='h-5 w-5' />
+							</Link>
 						</div>
 					</div>
-				</footer>
-						</div>
-					</main>
-				);
-			}
+				</div>
+				<div className='grid flex-1 grid-cols-1 gap-10 text-muted-foreground sm:grid-cols-2 lg:grid-cols-3'>
+					<div className='flex flex-col gap-3'>
+						<h2 className='text-2xl font-semibold text-foreground'>Company</h2>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Use cases
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Integrations
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Change logs
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Blogs
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Contact
+						</Link>
+					</div>
+					<div className='flex flex-col gap-3'>
+						<h2 className='text-2xl font-semibold text-foreground'>
+							Resources
+						</h2>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							About us
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							FAQ
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Contact Us
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Blogs
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Privacy policy
+						</Link>
+					</div>
+					<div className='flex flex-col gap-3'>
+						<h2 className='text-2xl font-semibold text-foreground'>Product</h2>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Solutions
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Features
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Pricing
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Updates
+						</Link>
+						<Link
+							href='/#'
+							className='text-sm transition-colors hover:text-foreground'
+						>
+							Support
+						</Link>
+					</div>
+				</div>
+			</div>
+			<div className='mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-sm text-muted-foreground lg:flex-row'>
+				<span>
+					© {new Date().getFullYear()} ProctoAI • All rights reserved.
+				</span>
+				<span className='flex items-center gap-2'>
+					<span className='h-2 w-2 rounded-full bg-emerald-400' />
+					All systems nominal
+				</span>
+			</div>
+		</footer>
+	);
+}

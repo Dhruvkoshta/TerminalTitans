@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Camera, Check, RefreshCcw } from "lucide-react";
 import Webcam from "react-webcam";
+import { uploadCanvasToVercelBlob } from "@/lib/blob-storage";
 
 interface FaceVerificationStepProps {
 	onNext: () => void;
@@ -47,15 +48,14 @@ export default function FaceVerificationStep({
 				throw new Error("Failed to capture screenshot");
 			}
 
-			// Convert to blob for upload
+			// Convert to blob and upload to Vercel Blob
 			const response = await fetch(imageSrc);
 			const blob = await response.blob();
 
-			const form = new FormData();
-			form.append("file", blob, `face-${Date.now()}.jpg`);
-			const res = await fetch("/api/upload", { method: "POST", body: form });
-			if (!res.ok) throw new Error("Upload failed");
-			const { url } = await res.json();
+			const url = await uploadCanvasToVercelBlob(
+				imageSrc,
+				`face-${Date.now()}.jpg`
+			);
 
 			setCapturedImage(url);
 			onCapture(url);
@@ -88,7 +88,7 @@ export default function FaceVerificationStep({
 			</div>
 
 			<Card className='p-6'>
-				<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative mb-4'>
+				<div className='aspect-video bg-card rounded-lg overflow-hidden relative mb-4'>
 					{!capturedImage ? (
 						<Webcam
 							ref={webcamRef}

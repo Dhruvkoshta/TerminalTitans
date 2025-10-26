@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import Webcam from "react-webcam";
+import { uploadVideoToVercelBlob } from "@/lib/blob-storage";
 
 interface RoomScanStepProps {
 	onNext: () => void;
@@ -44,12 +45,7 @@ export default function RoomScanStep({
 	}, []);
 
 	async function uploadBlob(blob: Blob, name: string): Promise<string> {
-		const form = new FormData();
-		form.append("file", blob, name);
-		const res = await fetch("/api/upload", { method: "POST", body: form });
-		if (!res.ok) throw new Error("Upload failed");
-		const { url } = await res.json();
-		return url as string;
+		return uploadVideoToVercelBlob(blob, name);
 	}
 
 	async function startScan() {
@@ -152,7 +148,7 @@ export default function RoomScanStep({
 
 			<Card className='p-6'>
 				<div className='space-y-6'>
-					<div className='aspect-video bg-slate-900 rounded-lg overflow-hidden relative'>
+					<div className='aspect-video bg-card rounded-lg overflow-hidden relative'>
 						{isComplete ? (
 							<div className='flex items-center justify-center h-full'>
 								<div className='text-center'>
@@ -175,9 +171,11 @@ export default function RoomScanStep({
 								/>
 								{isRecording && (
 									<div className='absolute inset-0 flex items-center justify-center bg-black/40'>
-										<div className='text-center text-white'>
+										<div className='text-center text-foreground'>
 											<Camera className='h-16 w-16 mx-auto mb-4 animate-pulse' />
-											<p className='text-lg font-medium'>Recording Room Scan...</p>
+											<p className='text-lg font-medium'>
+												Recording Room Scan...
+											</p>
 											<p className='text-sm mt-2'>
 												Please slowly pan your camera 360°
 											</p>
@@ -192,7 +190,7 @@ export default function RoomScanStep({
 							<div className='absolute bottom-0 inset-x-0 p-4'>
 								<div className='space-y-2'>
 									<Progress value={progress} className='h-2' />
-									<div className='flex justify-between text-sm text-white'>
+									<div className='flex justify-between text-sm text-foreground'>
 										<span>{Math.round(progress)}%</span>
 										<span>
 											{Math.ceil((SCAN_DURATION * (100 - progress)) / 100)}s

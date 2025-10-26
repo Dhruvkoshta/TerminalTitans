@@ -17,35 +17,30 @@ export default function Header() {
 	return (
 		<header className='fixed top-2 left-0 right-0 z-50 h-16'>
 			<div className='mx-auto w-full max-w-6xl px-4 h-full'>
-				<div className='h-full rounded-2xl bg-slate-900/60 backdrop-blur-md shadow-lg flex items-center justify-between px-4'>
+				<div className='h-full rounded-2xl bg-card/80 backdrop-blur-md shadow-lg flex items-center justify-between px-4'>
 					<div className='flex items-center gap-4'>
 						<Link
 							href='/'
-							className='text-2xl font-bold tracking-tight text-white'
+							className='text-2xl font-bold tracking-tight text-foreground'
 						>
 							PROCTO
 						</Link>
-						<nav className='hidden gap-4 text-base text-purple-100 sm:flex'>
-							{links.map(({ to, label }) => (
-								<Link
-									key={to}
-									href={to as any}
-									className='hover:text-white transition-colors'
-								>
-									{label}
-								</Link>
-							))}
-						</nav>
 					</div>
 
+					<nav className='hidden gap-4 text-base text-muted-foreground sm:flex'>
+						{links.map(({ to, label }) => (
+							<Link
+								key={to}
+								href={to as any}
+								className='hover:text-foreground transition-colors border p-2 rounded-md border-transparent hover:border-border'
+							>
+								{label}
+							</Link>
+						))}
+					</nav>
 					<div className='flex items-center gap-2'>
 						<ModeToggle />
 						<UserMenu />
-						<div className='hidden sm:block'>
-							<Button variant='ghost' size='sm' asChild>
-								<Link href={"/about" as any}>About</Link>
-							</Button>
-						</div>
 					</div>
 				</div>
 			</div>

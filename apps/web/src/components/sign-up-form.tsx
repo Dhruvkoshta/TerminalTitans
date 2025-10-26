@@ -35,14 +35,12 @@ export default function SignUpForm({
 		onSubmit: async ({ value }) => {
 			try {
 				// create the user
-				await authClient.signUp.email(
-					{
-						email: value.email,
-						password: value.password,
-						name: value.name,
-						userType: value.userType,
-					} as any,
-				);
+				await authClient.signUp.email({
+					email: value.email,
+					password: value.password,
+					name: value.name,
+					userType: value.userType,
+				} as any);
 				// immediately sign in so server-side session is available
 				await authClient.signIn.email(
 					{
@@ -50,15 +48,20 @@ export default function SignUpForm({
 						password: value.password,
 					},
 					{
-							onSuccess: () => {
-								if (typeof window !== "undefined") window.location.replace("/dashboard");
-								else router.replace("/dashboard");
-								toast.success("Sign up successful");
-							},
-						onError: (error) => {
-							toast.error(error.error.message || error.error.statusText || "Sign in failed after sign up");
+						onSuccess: () => {
+							if (typeof window !== "undefined")
+								window.location.replace("/dashboard");
+							else router.replace("/dashboard");
+							toast.success("Sign up successful");
 						},
-					},
+						onError: (error) => {
+							toast.error(
+								error.error.message ||
+									error.error.statusText ||
+									"Sign in failed after sign up"
+							);
+						},
+					}
 				);
 			} catch (error) {
 				console.error("Sign up / sign in error:", error);
@@ -80,7 +83,7 @@ export default function SignUpForm({
 	}
 
 	return (
-		<div className={embedded ? undefined : 'mx-auto w-full mt-10 max-w-md p-6'}>
+		<div className={embedded ? undefined : "mx-auto w-full mt-10 max-w-md p-6"}>
 			{!embedded && (
 				<h1 className='mb-6 text-center text-3xl font-bold'>Create Account</h1>
 			)}
@@ -104,9 +107,10 @@ export default function SignUpForm({
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className='border-white'
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className='text-red-500'>
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -127,9 +131,10 @@ export default function SignUpForm({
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className='border-white'
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className='text-red-500'>
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -141,7 +146,7 @@ export default function SignUpForm({
 				<div>
 					<form.Field name='password'>
 						{(field) => (
-							<div className='space-y-2'>
+							<div className='space-y-2 border-white'>
 								<Label htmlFor={field.name}>Password</Label>
 								<Input
 									id={field.name}
@@ -150,9 +155,10 @@ export default function SignUpForm({
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className='border-white'
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className='text-red-500'>
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -179,7 +185,7 @@ export default function SignUpForm({
 									</SelectContent>
 								</Select>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className='text-red-500'>
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -206,7 +212,7 @@ export default function SignUpForm({
 					<Button
 						variant='link'
 						onClick={onSwitchToSignIn}
-						className='text-indigo-600 hover:text-indigo-800'
+						className='text-primary hover:text-primary/80'
 					>
 						Already have an account? Sign In
 					</Button>
@@ -214,5 +220,4 @@ export default function SignUpForm({
 			)}
 		</div>
 	);
-
 }

@@ -30,16 +30,17 @@ export default function SignInForm({
 					password: value.password,
 				},
 				{
-						onSuccess: () => {
-								// perform full navigation so server-side session is available immediately
-								if (typeof window !== "undefined") window.location.replace("/dashboard");
-								else router.replace("/dashboard");
-								toast.success("Sign in successful");
-							},
+					onSuccess: () => {
+						// perform full navigation so server-side session is available immediately
+						if (typeof window !== "undefined")
+							window.location.replace("/dashboard");
+						else router.replace("/dashboard");
+						toast.success("Sign in successful");
+					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
 					},
-				},
+				}
 			);
 		},
 		validators: {
@@ -57,7 +58,7 @@ export default function SignInForm({
 	return (
 		<div className={embedded ? undefined : "mx-auto w-full mt-10 max-w-md p-6"}>
 			{!embedded && (
-				<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+				<h1 className='mb-6 text-center text-3xl font-bold'>Welcome Back</h1>
 			)}
 
 			<form
@@ -66,23 +67,24 @@ export default function SignInForm({
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-4"
+				className='space-y-4'
 			>
 				<div>
-					<form.Field name="email">
+					<form.Field name='email'>
 						{(field) => (
-							<div className="space-y-2">
+							<div className='space-y-2'>
 								<Label htmlFor={field.name}>Email</Label>
 								<Input
 									id={field.name}
 									name={field.name}
-									type="email"
+									type='email'
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className='border-white'
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -92,20 +94,21 @@ export default function SignInForm({
 				</div>
 
 				<div>
-					<form.Field name="password">
+					<form.Field name='password'>
 						{(field) => (
-							<div className="space-y-2">
+							<div className='space-y-2 border-white'>
 								<Label htmlFor={field.name}>Password</Label>
 								<Input
 									id={field.name}
 									name={field.name}
-									type="password"
+									type='password'
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className='border-white'
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className='text-destructive'>
 										{error?.message}
 									</p>
 								))}
@@ -117,8 +120,8 @@ export default function SignInForm({
 				<form.Subscribe>
 					{(state) => (
 						<Button
-							type="submit"
-							className="w-full"
+							type='submit'
+							className='w-full'
 							disabled={!state.canSubmit || state.isSubmitting}
 						>
 							{state.isSubmitting ? "Submitting..." : "Sign In"}
@@ -128,11 +131,11 @@ export default function SignInForm({
 			</form>
 
 			{!embedded && (
-				<div className="mt-4 text-center">
+				<div className='mt-4 text-center'>
 					<Button
-						variant="link"
+						variant='link'
 						onClick={onSwitchToSignUp}
-						className="text-indigo-600 hover:text-indigo-800"
+						className='text-primary hover:text-primary/80'
 					>
 						Need an account? Sign Up
 					</Button>
@@ -140,5 +143,4 @@ export default function SignInForm({
 			)}
 		</div>
 	);
-
 }
