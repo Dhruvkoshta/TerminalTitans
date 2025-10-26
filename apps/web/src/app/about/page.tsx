@@ -103,12 +103,30 @@ export default function AboutPage() {
 	];
 
 	const team = [
-		{ name: "Jane Doe", title: "Founder & CEO" },
-		{ name: "Samir Patel", title: "CTO" },
-		{ name: "Aisha Khan", title: "Head of Product" },
-		{ name: "Carlos Ruiz", title: "Lead ML Engineer" },
-		{ name: "Mei Lin", title: "Design Lead" },
-		{ name: "Ravi Sharma", title: "Security Engineer" },
+		{
+			name: "Dhruv Kumar Koshta",
+			title: "Founder & CEO",
+			imageurl: "/images/1738317760604.jpg",
+			linkedin: "https://www.linkedin.com/in/dhruv-koshta-15252b296/",
+		},
+		{
+			name: "Rohan Kumar",
+			title: "CTO",
+			imageurl: "/images/rohan.jpg",
+			linkedin: "https://www.linkedin.com/in/rohan19725/",
+		},
+		{
+			name: "Aayush Ranjan",
+			title: "Head of Product",
+			imageurl: "/images/1753517089180.jpg",
+			linkedin: "https://www.linkedin.com/in/aayushprof/",
+		},
+		{
+			name: "Navit Mathur",
+			title: "Lead ML Engineer",
+			imageurl: "/images/file.jpg",
+			linkedin: "https://www.linkedin.com/in/navit-mathur-45053837b/",
+		},
 	];
 
 	return (
@@ -143,10 +161,13 @@ export default function AboutPage() {
 					<div className='mt-8 lg:mt-0 lg:w-1/2'>
 						<div className='mx-auto max-w-md overflow-hidden rounded-xl bg-linear-to-tr from-primary to-accent p-6 shadow-lg'>
 							{/* placeholder illustration */}
-							<div
-								className='h-56 w-full rounded-md bg-secondary'
-								aria-hidden
-							/>
+							<div className='h-56 w-full rounded-md bg-secondary' aria-hidden>
+								<img
+									src='/images/1.jpg'
+									alt='office'
+									className='h-56 w-full rounded-md object-cover'
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -180,7 +201,13 @@ export default function AboutPage() {
 							<div
 								className='h-64 w-full rounded-md bg-secondary/50'
 								aria-hidden
-							/>
+							>
+								<img
+									src='/images/3.png'
+									alt='team meeting'
+									className='h-64 w-full rounded-md object-cover'
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -217,16 +244,24 @@ export default function AboutPage() {
 						{team.map((m) => (
 							<div key={m.name} className='rounded-xl bg-card p-6'>
 								<div className='flex flex-col items-center'>
-									<div className='h-24 w-24 rounded-full bg-secondary' />
+									<div className='h-24 w-24 rounded-full bg-secondary'>
+										<img
+											src={m.imageurl}
+											alt={m.name}
+											className='h-24 w-24 rounded-full object-cover'
+										/>
+									</div>
 									<div className='mt-4 text-lg font-semibold'>{m.name}</div>
 									<div className='mt-1 text-sm text-muted-foreground'>
 										{m.title}
 									</div>
 									<div className='mt-3'>
 										<a
-											href='#'
+											href={m.linkedin}
+											target='_blank'
+											rel='noopener noreferrer'
 											aria-label='LinkedIn'
-											className='text-muted-foreground hover:text-foreground'
+											className='text-muted-foreground hover:text-primary transition-colors'
 										>
 											<svg
 												xmlns='http://www.w3.org/2000/svg'

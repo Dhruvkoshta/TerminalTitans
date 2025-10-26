@@ -108,7 +108,7 @@ function Hero() {
 						className='relative max-w-[80%] overflow-hidden rounded-2xl border border-border bg-card backdrop-blur max-md:max-w-full'
 					>
 						<Image
-							src='/assets/images/home/dashboard.png'
+							src='/images/dashboard.png'
 							alt='dashboard'
 							width={1400}
 							height={800}
@@ -282,7 +282,7 @@ function Plugins() {
 				<Reveal>
 					<div className='max-h-[650px] max-w-[850px] overflow-hidden rounded-2xl border border-primary/30 shadow-[0_0_60px_-15px_rgba(15,164,175,0.44)]'>
 						<Image
-							src='/assets/images/home/dash.png'
+							src='/images/exam.png'
 							alt='Plugin preview'
 							width={1200}
 							height={700}
@@ -330,7 +330,7 @@ function Insights() {
 				<Reveal>
 					<div className='max-h-[650px] max-w-[850px] overflow-hidden rounded-2xl border border-primary/30 shadow-[0_0_60px_-15px_rgba(15,164,175,0.44)]'>
 						<Image
-							src='/assets/images/home/insights.png'
+							src='/images/review.png'
 							alt='Insights'
 							width={1200}
 							height={700}
@@ -628,7 +628,7 @@ function Footer() {
 			<div className='flex flex-col justify-between gap-10 rounded-2xl border-t border-border pt-12 lg:flex-row'>
 				<div className='flex w-full max-w-xs flex-col items-start gap-5 text-muted-foreground'>
 					<Image
-						src='/assets/logo/logo.png'
+						src='/images/logo.png'
 						alt='logo'
 						width={120}
 						height={120}

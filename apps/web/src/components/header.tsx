@@ -21,9 +21,10 @@ export default function Header() {
 					<div className='flex items-center gap-4'>
 						<Link
 							href='/'
-							className='text-2xl font-bold tracking-tight text-foreground'
+							className='text-2xl font-bold tracking-tight flex flex-row gap-1 justify-center items-center text-foreground'
 						>
-							PROCTO
+							<img src='/images/logo.png' alt='Procto Logo' className='h-8' />
+							PROCTOAi
 						</Link>
 					</div>
 

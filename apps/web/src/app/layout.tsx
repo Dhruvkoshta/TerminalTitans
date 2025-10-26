@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "my-better-t-app",
-	description: "my-better-t-app",
+	title: "ProctoAi",
+	description: "ProctoAi - AI-Powered Exam Proctoring",
 };
 
 export default function RootLayout({
@@ -25,14 +25,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang='en' suppressHydrationWarning>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
 				<Providers>
-					<div className="grid grid-rows-[auto_1fr] h-svh">
+					<div className='grid grid-rows-[auto_1fr] h-svh'>
 						<Header />
-						<main className="pt-16">{children}</main>
+						<main className='pt-16'>{children}</main>
 					</div>
 				</Providers>
 			</body>
