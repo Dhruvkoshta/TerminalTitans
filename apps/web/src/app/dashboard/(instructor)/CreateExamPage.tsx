@@ -16,6 +16,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 type QuestionType = "mcq" | "coding" | "short";
 
@@ -124,8 +125,8 @@ export default function ExamCreatorPage({
 	const [examTitle, setExamTitle] = useState<string>("Untitled Exam");
 	const [course, setCourse] = useState<string>("");
 	const [durationMin, setDurationMin] = useState<number>(60);
-	const [startTime, setStartTime] = useState<string>("");
-	const [endTime, setEndTime] = useState<string>("");
+	const [startTime, setStartTime] = useState<Date | undefined>();
+	const [endTime, setEndTime] = useState<Date | undefined>();
 
 	const [enableAI, setEnableAI] = useState<boolean>(true);
 	const [webcamMonitoring, setWebcamMonitoring] = useState<boolean>(true);
@@ -326,8 +327,8 @@ export default function ExamCreatorPage({
 			title: examTitle,
 			course,
 			durationMin,
-			startTime,
-			endTime,
+			startTime: startTime?.toISOString(),
+			endTime: endTime?.toISOString(),
 			status,
 			meta: { shuffleQuestions, autoRelease, allowMultipleAttempts },
 			proctoring: {
@@ -551,21 +552,14 @@ export default function ExamCreatorPage({
 										<div className='text-xs text-slate-600 mb-1'>
 											Start Time
 										</div>
-										<input
-											type='datetime-local'
-											className='w-full px-3 py-2 rounded-md border bg-white'
-											value={startTime}
-											onChange={(e) => setStartTime(e.target.value)}
+										<DateTimePicker
+											date={startTime}
+											onDateChange={setStartTime}
 										/>
 									</label>
 									<label className='block text-sm'>
 										<div className='text-xs text-slate-600 mb-1'>End Time</div>
-										<input
-											type='datetime-local'
-											className='w-full px-3 py-2 rounded-md border bg-white'
-											value={endTime}
-											onChange={(e) => setEndTime(e.target.value)}
-										/>
+										<DateTimePicker date={endTime} onDateChange={setEndTime} />
 									</label>
 								</div>
 							</details>
