@@ -262,7 +262,6 @@ tRPC endpoints organized by routers:
 
 Meet the minds behind ProctoAI:
 
-![Team](./apps/web/public/images/1738317760604.jpg)
 
 - **Dhruv Kumar Koshta** - Founder & CEO
 - **Rohan Kumar** - CTO
