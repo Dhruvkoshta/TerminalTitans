@@ -1,4 +1,4 @@
-import { db, eq, and } from "@my-better-t-app/db";
+import { db, eq, and, inArray } from "@my-better-t-app/db";
 import { attempts, verificationArtifacts, exams } from "@my-better-t-app/db/schema/auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -41,20 +41,28 @@ export async function GET(
       .from(attempts)
       .where(eq(attempts.examId, examIdNum));
 
-    // For each attempt, fetch artifacts
-    const attemptsWithArtifacts = await Promise.all(
-      examAttempts.map(async (attempt) => {
-        const artifacts = await db
-          .select()
-          .from(verificationArtifacts)
-          .where(eq(verificationArtifacts.attemptId, attempt.id));
+    // Optimize: Fetch all artifacts for all attempts in a single query
+    const attemptIds = examAttempts.map(a => a.id);
+    const allArtifacts = attemptIds.length > 0 ? await db
+      .select()
+      .from(verificationArtifacts)
+      .where(inArray(verificationArtifacts.attemptId, attemptIds)) : [];
 
-        return {
-          ...attempt,
-          artifacts,
-        };
-      })
-    );
+    // Group artifacts by attemptId
+    const artifactsByAttempt = new Map<number, typeof allArtifacts>();
+    allArtifacts.forEach(artifact => {
+      const attemptId = artifact.attemptId;
+      if (!artifactsByAttempt.has(attemptId)) {
+        artifactsByAttempt.set(attemptId, []);
+      }
+      artifactsByAttempt.get(attemptId)!.push(artifact);
+    });
+
+    // Build the final result
+    const attemptsWithArtifacts = examAttempts.map(attempt => ({
+      ...attempt,
+      artifacts: artifactsByAttempt.get(attempt.id) || [],
+    }));
 
     return NextResponse.json(attemptsWithArtifacts);
   } catch (error) {

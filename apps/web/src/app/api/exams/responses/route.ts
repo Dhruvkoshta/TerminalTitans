@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, eq } from "@my-better-t-app/db";
+import { db, eq, inArray } from "@my-better-t-app/db";
 import { attempts, responses, examQuestions, exams, verificationArtifacts } from "@my-better-t-app/db/schema/auth";
 
 export async function GET(request: NextRequest) {
@@ -37,31 +37,51 @@ export async function GET(request: NextRequest) {
 			.from(examQuestions)
 			.where(eq(examQuestions.examId, Number(examId)));
 
-		// For each attempt, get all responses and artifacts
-		const attemptsWithResponses = await Promise.all(
-			examAttempts.map(async (attempt) => {
-				const studentResponses = await db
-					.select({
-						response: responses,
-						question: examQuestions,
-					})
-					.from(responses)
-					.leftJoin(examQuestions, eq(responses.questionId, examQuestions.id))
-					.where(eq(responses.attemptId, attempt.id));
-
-				// Fetch verification artifacts for this attempt
-				const artifacts = await db
-					.select()
-					.from(verificationArtifacts)
-					.where(eq(verificationArtifacts.attemptId, attempt.id));
-
-				return {
-					...attempt,
-					responses: studentResponses,
-					artifacts,
-				};
+		// Optimize: Fetch all responses and artifacts in bulk instead of one by one
+		const attemptIds = examAttempts.map(a => a.id);
+		
+		// Fetch all responses for all attempts at once
+		const allResponses = attemptIds.length > 0 ? await db
+			.select({
+				response: responses,
+				question: examQuestions,
 			})
-		);
+			.from(responses)
+			.leftJoin(examQuestions, eq(responses.questionId, examQuestions.id))
+			.where(inArray(responses.attemptId, attemptIds)) : [];
+
+		// Fetch all artifacts for all attempts at once
+		const allArtifacts = attemptIds.length > 0 ? await db
+			.select()
+			.from(verificationArtifacts)
+			.where(inArray(verificationArtifacts.attemptId, attemptIds)) : [];
+
+		// Group responses and artifacts by attemptId
+		const responsesByAttempt = new Map<number, typeof allResponses>();
+		const artifactsByAttempt = new Map<number, typeof allArtifacts>();
+
+		allResponses.forEach(r => {
+			const attemptId = r.response.attemptId;
+			if (!responsesByAttempt.has(attemptId)) {
+				responsesByAttempt.set(attemptId, []);
+			}
+			responsesByAttempt.get(attemptId)!.push(r);
+		});
+
+		allArtifacts.forEach(artifact => {
+			const attemptId = artifact.attemptId;
+			if (!artifactsByAttempt.has(attemptId)) {
+				artifactsByAttempt.set(attemptId, []);
+			}
+			artifactsByAttempt.get(attemptId)!.push(artifact);
+		});
+
+		// Build the final result
+		const attemptsWithResponses = examAttempts.map(attempt => ({
+			...attempt,
+			responses: responsesByAttempt.get(attempt.id) || [],
+			artifacts: artifactsByAttempt.get(attempt.id) || [],
+		}));
 
 		return NextResponse.json({
 			exam: examDetails[0],
