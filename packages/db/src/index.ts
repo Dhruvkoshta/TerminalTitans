@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
 import ws from "ws";
@@ -12,5 +12,5 @@ export const db = (() => {
 	return drizzleNeon(sql);
 })();
 
-export { eq, and };
+export { eq, and, inArray };
 

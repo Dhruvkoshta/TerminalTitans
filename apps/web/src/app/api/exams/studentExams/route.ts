@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, eq } from "@my-better-t-app/db";
+import { db, eq, inArray } from "@my-better-t-app/db";
 import { exams, logs, attempts } from "@my-better-t-app/db/schema/auth";
 
 export async function GET(request: NextRequest) {
@@ -14,20 +14,25 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// Fetch all exams
+		// Fetch all published exams
 		const allExams = await db.select().from(exams).where(eq(exams.status, "published"));
 
-		// Get logs for this student
-		const studentLogs = await db
-			.select()
-			.from(logs)
-			.where(eq(logs.studentEmail, studentEmail));
+		// Optimize: Fetch all logs and attempts for this student in bulk
+		const [studentLogs, studentAttempts] = await Promise.all([
+			db.select().from(logs).where(eq(logs.studentEmail, studentEmail)),
+			db.select().from(attempts).where(eq(attempts.studentId, studentEmail))
+		]);
 
-		// Get attempts for this student
-		const studentAttempts = await db
-			.select()
-			.from(attempts)
-			.where(eq(attempts.studentId, studentEmail));
+		// Create lookup maps for faster access
+		const logsByExamCode = new Map<string, typeof studentLogs[0]>();
+		studentLogs.forEach(log => {
+			logsByExamCode.set(log.examCode, log);
+		});
+
+		const attemptsByExamId = new Map<number, typeof studentAttempts[0]>();
+		studentAttempts.forEach(attempt => {
+			attemptsByExamId.set(attempt.examId, attempt);
+		});
 
 		const now = new Date();
 		const pastExams = [];
@@ -38,9 +43,9 @@ export async function GET(request: NextRequest) {
 			const start = new Date(exam.dateTimeStart);
 			const end = new Date(start.getTime() + exam.duration * 60 * 1000);
 
-			// Check if student has logs for this exam
-			const hasAttempted = studentLogs.some((log) => log.examCode === exam.examCode);
-			const attempt = studentAttempts.find((att) => att.examId === exam.id);
+			// Use lookup maps instead of array.find for better performance
+			const hasAttempted = logsByExamCode.has(exam.examCode);
+			const attempt = attemptsByExamId.get(exam.id);
 
 			const examData = {
 				...exam,

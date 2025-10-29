@@ -43,6 +43,12 @@ export default function Detection(props: DetectionProps) {
 	const lastToastTime = useRef<{ [key: string]: number }>({});
 	const TOAST_COOLDOWN = 5000; // 5 seconds in ms
 
+	// Memoize props callbacks to prevent unnecessary effect re-runs
+	const propsRef = useRef(props);
+	useEffect(() => {
+		propsRef.current = props;
+	}, [props]);
+
 	const showToast = useCallback(
 		(key: string, title: string, description: string) => {
 			const now = Date.now();
@@ -98,7 +104,7 @@ export default function Detection(props: DetectionProps) {
 				flipHorizontal: true,
 			});
 			if (!faces || faces.length === 0) {
-				props.onFocusUpdate?.({
+				propsRef.current.onFocusUpdate?.({
 					penaltyPerSecond: 2,
 					lookingOnScreen: false,
 					headMove: 0,
@@ -171,7 +177,7 @@ export default function Detection(props: DetectionProps) {
 						"Eyes Looking Away Detected",
 						"Action has been Recorded"
 					);
-					props.EyesOffScreen();
+					propsRef.current.EyesOffScreen();
 				}
 			}
 
@@ -179,7 +185,7 @@ export default function Detection(props: DetectionProps) {
 			if (!lookingOnScreen) status = "distracted";
 			if (headMove > 0.12) status = "away";
 
-			props.onFocusUpdate?.({
+			propsRef.current.onFocusUpdate?.({
 				penaltyPerSecond: penalty,
 				lookingOnScreen,
 				headMove,
@@ -188,7 +194,7 @@ export default function Detection(props: DetectionProps) {
 		} catch {
 			// ignore transient inference errors
 		}
-	}, [props]);
+	}, [showToast]);
 
 	// object detection loop with coco-ssd
 	const runObjects = useCallback(async () => {
@@ -214,14 +220,14 @@ export default function Detection(props: DetectionProps) {
 			let faces = 0;
 			for (const p of preds) {
 				if (p.class === "cell phone") {
-					props.MobilePhone();
+					propsRef.current.MobilePhone();
 					showToast(
 						"mobilePhone",
 						"Cell Phone Detected",
 						"Action has been Recorded"
 					);
 				} else if (p.class === "book" || p.class === "laptop") {
-					props.ProhibitedObject();
+					propsRef.current.ProhibitedObject();
 					showToast(
 						"prohibitedObject",
 						"Prohibited Object Detected",
@@ -232,7 +238,7 @@ export default function Detection(props: DetectionProps) {
 				}
 			}
 			if (faces > 1) {
-				props.MultipleFacesVisible();
+				propsRef.current.MultipleFacesVisible();
 				showToast(
 					"multipleFaces",
 					`${faces} people detected`,
@@ -243,9 +249,9 @@ export default function Detection(props: DetectionProps) {
 			// noop
 		}
 		rafId.current = requestAnimationFrame(runObjects);
-	}, [drawPredictions, props]);
+	}, [drawPredictions, showToast]);
 
-	// load TF + models and start loops
+	// load TF + models and start loops (only once on mount)
 	useEffect(() => {
 		let cancelled = false;
 
@@ -312,13 +318,14 @@ export default function Detection(props: DetectionProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, []); // Empty dependency array - load models only once
 
 	// start detection loops once webcam + models are ready
 	useEffect(() => {
 		if (!ready) return;
 		rafId.current = requestAnimationFrame(runObjects);
-		faceInterval.current = setInterval(runGaze, 1000);
+		// Optimize: Reduce face detection frequency from 1000ms to 1500ms to reduce CPU load
+		faceInterval.current = setInterval(runGaze, 1500);
 		return () => {
 			if (rafId.current) cancelAnimationFrame(rafId.current);
 			if (faceInterval.current) clearInterval(faceInterval.current);
@@ -326,6 +333,7 @@ export default function Detection(props: DetectionProps) {
 	}, [ready, runObjects, runGaze]);
 
 	// periodic face-not-visible check using face landmarks
+	// Optimize: Reduce frequency from 5000ms to 7000ms to reduce CPU load
 	useEffect(() => {
 		if (!ready) return;
 		const timer = setInterval(async () => {
@@ -337,7 +345,7 @@ export default function Detection(props: DetectionProps) {
 					flipHorizontal: true,
 				});
 				if (!faces || faces.length === 0) {
-					props.FaceNotVisible();
+					propsRef.current.FaceNotVisible();
 					showToast(
 						"faceNotVisible",
 						"Face Not Visible",
@@ -345,9 +353,9 @@ export default function Detection(props: DetectionProps) {
 					);
 				}
 			} catch {}
-		}, 5000);
+		}, 7000);
 		return () => clearInterval(timer);
-	}, [ready, props, showToast]);
+	}, [ready, showToast]);
 
 	return (
 		<div className='relative w-full h-full flex items-center justify-center'>
