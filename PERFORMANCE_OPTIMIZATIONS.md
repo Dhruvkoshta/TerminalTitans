@@ -40,7 +40,13 @@ const allArtifacts = await db.select()...where(inArray(verificationArtifacts.att
 
 // Group results in memory
 const responsesByAttempt = new Map();
-allResponses.forEach(r => { /* group by attemptId */ });
+allResponses.forEach(r => {
+  const attemptId = r.response.attemptId;
+  if (!responsesByAttempt.has(attemptId)) {
+    responsesByAttempt.set(attemptId, []);
+  }
+  responsesByAttempt.get(attemptId).push(r);
+});
 ```
 
 **Performance Impact:**
