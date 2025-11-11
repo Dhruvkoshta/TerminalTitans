@@ -22,9 +22,9 @@ export default function SignUpPage() {
 	if (isPending) return <Loader />;
 
 	return (
-		<div className='container flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center '>
-			<div className='p-4 lg:p-8'>
-				<div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]'>
+		<div className='flex items-center justify-center min-h-screen'>
+			<div className='p-4 lg:p-8 w-full max-w-sm'>
+				<div className='mx-auto flex w-full flex-col justify-center space-y-6'>
 					<div className='flex flex-col space-y-2 text-center'>
 						<h1 className='text-2xl font-semibold tracking-tight'>
 							Create your account
